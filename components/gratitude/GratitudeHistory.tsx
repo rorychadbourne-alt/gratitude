@@ -40,8 +40,31 @@ export default function GratitudeHistory({ user }: GratitudeHistoryProps) {
 
   useEffect(() => {
     fetchResponses()
-  }, [fetchResponses])
 
+    // Set up real-time subscription for updates
+    const channel = supabase
+      .channel('gratitude_responses_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'gratitude_responses',
+          filter: `user_id=eq.${user?.id}`
+        },
+        () => {
+          // Refresh responses when changes occur
+          fetchResponses()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [fetchResponses, user?.id])
+
+  // Rest of component remains the same...
   if (loading) {
     return (
       <div className="space-y-4">

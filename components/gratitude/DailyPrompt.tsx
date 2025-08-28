@@ -69,29 +69,40 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
     try {
       if (existingResponse) {
         // Update existing response
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('gratitude_responses')
           .update({ response_text: response.trim() })
           .eq('id', existingResponse.id)
+          .select()
+          .single()
 
         if (error) throw error
-        setMessage('Your response has been updated! ✨')
+        
+        // Update the existing response state immediately
+        setExistingResponse(data)
+        setMessage('Your response has been updated!')
       } else {
         // Create new response
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('gratitude_responses')
           .insert({
             user_id: user.id,
             prompt_id: prompt.id,
             response_text: response.trim()
           })
+          .select()
+          .single()
 
         if (error) throw error
-        setMessage('Thank you for sharing your gratitude! ✨')
         
-        // Fetch the created response
-        fetchTodaysPrompt()
+        // Update state immediately
+        setExistingResponse(data)
+        setMessage('Thank you for sharing your gratitude!')
       }
+      
+      // Clear message after 3 seconds
+      setTimeout(() => setMessage(null), 3000)
+      
     } catch (error: any) {
       setMessage('Error saving your response. Please try again.')
       console.error('Error:', error)
