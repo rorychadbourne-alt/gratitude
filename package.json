@@ -23,7 +23,7 @@
     "typescript": "5.2.2",
     "@supabase/supabase-js": "^2.39.0",
     "@supabase/ssr": "^0.1.0"
-  }
+  },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/react": "^18.0.0",
