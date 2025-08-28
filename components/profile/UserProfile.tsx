@@ -35,7 +35,7 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Email
           </label>
-          <p className="text-gray-900">{user.email}</p>
+          <p className="text-gray-900">{user?.email || 'No email'}</p>
         </div>
         
         <div>
@@ -50,7 +50,7 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
             Member Since
           </label>
           <p className="text-gray-900">
-            {new Date(user.created_at).toLocaleDateString()}
+            {user?.created_at ? new Date(user.created_at).toLocaleDateString() : 'Unknown'}
           </p>
         </div>
       </div>
