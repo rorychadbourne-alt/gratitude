@@ -27,14 +27,14 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
         .select('*')
         .eq('date', new Date().toISOString().split('T')[0])
         .single()
-
+  
       if (promptError) {
         console.error('Error fetching prompt:', promptError)
         return
       }
-
+  
       setPrompt(promptData)
-
+  
       // Check if user already responded today
       const { data: responseData } = await supabase
         .from('gratitude_responses')
@@ -42,18 +42,22 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
         .eq('user_id', user.id)
         .eq('prompt_id', promptData.id)
         .single()
-
+  
       if (responseData) {
         setExistingResponse(responseData)
-        setResponse(responseData.response_text)
+        // Only set the response text if the current response is empty
+        // This prevents overriding user's current editing
+        if (!response) {
+          setResponse(responseData.response_text)
+        }
       }
-
+  
     } catch (error) {
       console.error('Error:', error)
     } finally {
       setLoading(false)
     }
-  }, [user?.id, supabase])
+  }, [user?.id, supabase, response]) // Add response to dependencies
 
   useEffect(() => {
     fetchTodaysPrompt()
@@ -62,10 +66,10 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!response.trim() || !prompt || !user?.id) return
-
+  
     setSubmitting(true)
     setMessage(null)
-
+  
     try {
       if (existingResponse) {
         // Update existing response
@@ -75,11 +79,14 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
           .eq('id', existingResponse.id)
           .select()
           .single()
-
+  
         if (error) throw error
         
-        // Update the existing response state immediately
-        setExistingResponse(data)
+        // Update the existing response state but DON'T change the text input
+        setExistingResponse({
+          ...existingResponse,
+          response_text: response.trim()
+        })
         setMessage('Your response has been updated!')
       } else {
         // Create new response
@@ -92,19 +99,18 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
           })
           .select()
           .single()
-
+  
         if (error) throw error
         
-        // Update state immediately
+        // Set the new response data but keep the current text input
         setExistingResponse(data)
         setMessage('Thank you for sharing your gratitude!')
       }
       
-      // Clear message after 3 seconds
       setTimeout(() => setMessage(null), 3000)
       
     } catch (error: any) {
-      setMessage('Error saving your response. Please try again.')
+      setMessage(`Error saving your response: ${error.message}`)
       console.error('Error:', error)
     } finally {
       setSubmitting(false)
