@@ -155,7 +155,7 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            placeholder="Share what you're grateful for..."
+            placeholder="Share what you&apos;re grateful for..."
             required
             rows={4}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"

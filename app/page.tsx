@@ -10,9 +10,10 @@ export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
+    const supabase = createClient()
+    
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -26,9 +27,19 @@ export default function Dashboard() {
     }
 
     getUser()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user || null)
+      if (!session) {
+        router.push('/login')
+      }
+    })
+
+    return () => subscription.unsubscribe()
   }, [router])
 
   const handleSignOut = async () => {
+    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
   }
@@ -50,7 +61,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Simple Navigation Header */}
       <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
@@ -75,7 +85,6 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* Main Content */}
       <div className="max-w-2xl mx-auto px-4 py-8">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">

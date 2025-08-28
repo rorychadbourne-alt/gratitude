@@ -59,8 +59,8 @@ export default function GratitudeHistory({ user }: GratitudeHistoryProps) {
   if (responses.length === 0) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <p className="text-gray-500 mb-4">You haven't shared any gratitude yet.</p>
-        <p className="text-sm text-gray-400">Start by responding to today's prompt above!</p>
+        <p className="text-gray-500 mb-4">You haven&apos;t shared any gratitude yet.</p>
+        <p className="text-sm text-gray-400">Start by responding to today&apos;s prompt above!</p>
       </div>
     )
   }
