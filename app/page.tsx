@@ -9,6 +9,7 @@ import GratitudeHistory from '../components/gratitude/GratitudeHistory'
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -37,6 +38,10 @@ export default function Dashboard() {
 
     return () => subscription.unsubscribe()
   }, [router])
+
+  const handleNewResponse = () => {
+    setRefreshTrigger(prev => prev + 1)
+  }
 
   const handleSignOut = async () => {
     const supabase = createClient()
@@ -96,8 +101,8 @@ export default function Dashboard() {
         </header>
 
         <div className="space-y-8">
-          <DailyPrompt user={user} />
-          <GratitudeHistory user={user} />
+          <DailyPrompt user={user} onNewResponse={handleNewResponse} />
+          <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
         </div>
       </div>
     </div>

@@ -1,68 +1,48 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { createClient } from '../../lib/supabase'
 
 interface DailyPromptProps {
   user: any
+  onNewResponse?: () => void
 }
 
-export default function DailyPrompt({ user }: DailyPromptProps) {
+export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [prompt, setPrompt] = useState<any>(null)
   const [response, setResponse] = useState('')
-  const [existingResponse, setExistingResponse] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-  const [hasLoadedInitialResponse, setHasLoadedInitialResponse] = useState(false)
   
   const supabase = createClient()
 
-  const fetchTodaysPrompt = useCallback(async () => {
-    if (!user?.id) return
-    
-    try {
-      // Get today's prompt
-      const { data: promptData, error: promptError } = await supabase
-        .from('gratitude_prompts')
-        .select('*')
-        .eq('date', new Date().toISOString().split('T')[0])
-        .single()
-
-      if (promptError) {
-        console.error('Error fetching prompt:', promptError)
-        return
-      }
-
-      setPrompt(promptData)
-
-      // Check if user already responded today
-      const { data: responseData } = await supabase
-        .from('gratitude_responses')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('prompt_id', promptData.id)
-        .single()
-
-      if (responseData) {
-        setExistingResponse(responseData)
-        // Only set the response text once on initial load
-        if (!hasLoadedInitialResponse) {
-          setResponse(responseData.response_text)
-          setHasLoadedInitialResponse(true)
-        }
-      }
-
-    } catch (error) {
-      console.error('Error:', error)
-    } finally {
-      setLoading(false)
-    }
-  }, [user?.id, supabase, hasLoadedInitialResponse]) // Remove response from dependencies
-
   useEffect(() => {
+    const fetchTodaysPrompt = async () => {
+      if (!user?.id) return
+      
+      try {
+        const { data: promptData, error: promptError } = await supabase
+          .from('gratitude_prompts')
+          .select('*')
+          .eq('date', new Date().toISOString().split('T')[0])
+          .single()
+
+        if (promptError) {
+          console.error('Error fetching prompt:', promptError)
+          return
+        }
+
+        setPrompt(promptData)
+      } catch (error) {
+        console.error('Error:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
     fetchTodaysPrompt()
-  }, [fetchTodaysPrompt])
+  }, [user?.id])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -72,38 +52,23 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
     setMessage(null)
 
     try {
-      if (existingResponse) {
-        // Update existing response
-        const { data, error } = await supabase
-          .from('gratitude_responses')
-          .update({ response_text: response.trim() })
-          .eq('id', existingResponse.id)
-          .select()
-          .single()
+      const { error } = await supabase
+        .from('gratitude_responses')
+        .insert({
+          user_id: user.id,
+          prompt_id: prompt.id,
+          response_text: response.trim()
+        })
 
-        if (error) throw error
-        
-        // Update the existing response state
-        setExistingResponse(data)
-        setMessage('Your response has been updated!')
-      } else {
-        // Create new response
-        const { data, error } = await supabase
-          .from('gratitude_responses')
-          .insert({
-            user_id: user.id,
-            prompt_id: prompt.id,
-            response_text: response.trim()
-          })
-          .select()
-          .single()
-
-        if (error) throw error
-        
-        // Set the new response data
-        setExistingResponse(data)
-        setHasLoadedInitialResponse(true)
-        setMessage('Thank you for sharing your gratitude!')
+      if (error) throw error
+      
+      // Clear the form and show success
+      setResponse('')
+      setMessage('Thank you for sharing your gratitude!')
+      
+      // Notify parent to refresh the feed
+      if (onNewResponse) {
+        onNewResponse()
       }
       
       setTimeout(() => setMessage(null), 3000)
@@ -183,7 +148,7 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
           disabled={submitting || !response.trim()}
           className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
         >
-          {submitting ? 'Saving...' : existingResponse ? 'Update Response' : 'Share Gratitude'}
+          {submitting ? 'Sharing...' : 'Share Gratitude'}
         </button>
       </form>
     </div>
