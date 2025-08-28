@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 
 interface DailyPromptProps {
@@ -14,13 +14,12 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchTodaysPrompt()
-  }, [])
-
-  const fetchTodaysPrompt = async () => {
+  const fetchTodaysPrompt = useCallback(async () => {
+    if (!user?.id) return
+    
     try {
       // Get today's prompt
       const { data: promptData, error: promptError } = await supabase
@@ -54,11 +53,15 @@ export default function DailyPrompt({ user }: DailyPromptProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id, supabase])
+
+  useEffect(() => {
+    fetchTodaysPrompt()
+  }, [fetchTodaysPrompt])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!response.trim() || !prompt) return
+    if (!response.trim() || !prompt || !user?.id) return
 
     setSubmitting(true)
     setMessage(null)

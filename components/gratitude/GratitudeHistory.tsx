@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '../../lib/supabase'
 
 interface GratitudeHistoryProps {
@@ -10,13 +10,12 @@ interface GratitudeHistoryProps {
 export default function GratitudeHistory({ user }: GratitudeHistoryProps) {
   const [responses, setResponses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  
   const supabase = createClient()
 
-  useEffect(() => {
-    fetchResponses()
-  }, [])
-
-  const fetchResponses = async () => {
+  const fetchResponses = useCallback(async () => {
+    if (!user?.id) return
+    
     try {
       const { data, error } = await supabase
         .from('gratitude_responses')
@@ -37,7 +36,11 @@ export default function GratitudeHistory({ user }: GratitudeHistoryProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [user?.id, supabase])
+
+  useEffect(() => {
+    fetchResponses()
+  }, [fetchResponses])
 
   if (loading) {
     return (
@@ -72,11 +75,11 @@ export default function GratitudeHistory({ user }: GratitudeHistoryProps) {
         <div key={response.id} className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-blue-500">
           <div className="flex justify-between items-start mb-2">
             <p className="text-sm text-gray-500">
-              {new Date(response.gratitude_prompts.date).toLocaleDateString('en-US', {
+              {response.gratitude_prompts?.date ? new Date(response.gratitude_prompts.date).toLocaleDateString('en-US', {
                 weekday: 'long',
                 month: 'long',
                 day: 'numeric'
-              })}
+              }) : 'Unknown date'}
             </p>
             <p className="text-xs text-gray-400">
               {new Date(response.created_at).toLocaleDateString()}
@@ -84,7 +87,7 @@ export default function GratitudeHistory({ user }: GratitudeHistoryProps) {
           </div>
           
           <p className="text-sm font-medium text-gray-700 mb-2">
-            {response.gratitude_prompts.prompt}
+            {response.gratitude_prompts?.prompt || 'Unknown prompt'}
           </p>
           
           <p className="text-gray-900 leading-relaxed">
