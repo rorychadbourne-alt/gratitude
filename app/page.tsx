@@ -13,37 +13,57 @@ export default function Dashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      
-      if (!session) {
-        router.push('/login')
-        return
-      }
+    let mounted = true
 
-      setUser(session.user)
-      setLoading(false)
+    const getUser = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        
+        if (!mounted) return
+        
+        if (!session) {
+          router.push('/login')
+          return
+        }
+
+        setUser(session.user)
+        setLoading(false)
+      } catch (error) {
+        console.error('Error getting session:', error)
+        if (mounted) {
+          setLoading(false)
+        }
+      }
     }
 
     getUser()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+      
       setUser(session?.user || null)
-      if (!session) {
+      if (!session && mounted) {
         router.push('/login')
       }
     })
 
-    return () => subscription.unsubscribe()
-  }, [router])
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
+  }, []) // Remove router from dependencies
 
   const handleNewResponse = () => {
     setRefreshTrigger(prev => prev + 1)
   }
 
   const handleSignOut = async () => {
-    await supabase.auth.signOut()
-    router.push('/login')
+    try {
+      await supabase.auth.signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
   }
 
   if (loading) {
