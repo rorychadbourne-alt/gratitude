@@ -46,6 +46,10 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    console.log('Environment check:', {
+      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
+      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+    })
     if (!response.trim() || !prompt || !user?.id) return
 
     setSubmitting(true)
