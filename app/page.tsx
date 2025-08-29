@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '../lib/supabase'
+import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
 import DailyPrompt from '../components/gratitude/DailyPrompt'
 import GratitudeHistory from '../components/gratitude/GratitudeHistory'
@@ -13,8 +13,6 @@ export default function Dashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    const supabase = createClient()
-    
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -44,7 +42,6 @@ export default function Dashboard() {
   }
 
   const handleSignOut = async () => {
-    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
   }

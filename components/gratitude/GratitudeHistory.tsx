@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 
 interface GratitudeHistoryProps {
   user: any
@@ -14,8 +14,6 @@ export default function GratitudeHistory({ user, refreshTrigger }: GratitudeHist
   const [editingId, setEditingId] = useState<string | null>(null)
   const [editText, setEditText] = useState('')
   const [updating, setUpdating] = useState(false)
-  
-  const supabase = createClient()
 
   const fetchResponses = useCallback(async () => {
     if (!user?.id) return
@@ -68,7 +66,6 @@ export default function GratitudeHistory({ user, refreshTrigger }: GratitudeHist
 
       if (error) throw error
 
-      // Update the local state
       setResponses(responses.map(r => 
         r.id === responseId 
           ? { ...r, response_text: editText.trim() }
@@ -95,7 +92,6 @@ export default function GratitudeHistory({ user, refreshTrigger }: GratitudeHist
 
       if (error) throw error
 
-      // Remove from local state
       setResponses(responses.filter(r => r.id !== responseId))
     } catch (error) {
       console.error('Error deleting response:', error)

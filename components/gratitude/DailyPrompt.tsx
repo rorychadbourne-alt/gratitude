@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 
 interface DailyPromptProps {
   user: any
@@ -14,8 +14,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
-  
-  const supabase = createClient()
 
   useEffect(() => {
     const fetchTodaysPrompt = async () => {
@@ -46,10 +44,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('Environment check:', {
-      url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-      hasKey: !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-    })
     if (!response.trim() || !prompt || !user?.id) return
 
     setSubmitting(true)
@@ -66,11 +60,9 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       if (error) throw error
       
-      // Clear the form and show success
       setResponse('')
       setMessage('Thank you for sharing your gratitude!')
       
-      // Notify parent to refresh the feed
       if (onNewResponse) {
         onNewResponse()
       }
@@ -78,8 +70,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       setTimeout(() => setMessage(null), 3000)
       
     } catch (error: any) {
-      setMessage(`Error saving your response: ${error.message}`)
-      console.error('Error:', error)
+      console.error('Submit error:', error)
+      setMessage(`Error: ${error.message}`)
     } finally {
       setSubmitting(false)
     }
