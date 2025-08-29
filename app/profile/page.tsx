@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import UserProfile from '../../components/profile/UserProfile'
 
@@ -12,8 +12,6 @@ export default function ProfilePage() {
   const router = useRouter()
 
   useEffect(() => {
-    const supabase = createClient()
-    
     const getUser = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       
@@ -24,7 +22,6 @@ export default function ProfilePage() {
 
       setUser(session.user)
 
-      // Get profile data
       try {
         const { data: profileData } = await supabase
           .from('profiles')
@@ -45,7 +42,6 @@ export default function ProfilePage() {
   }, [router])
 
   const handleSignOut = async () => {
-    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
   }

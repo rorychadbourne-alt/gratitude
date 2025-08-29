@@ -1,6 +1,6 @@
 'use client'
 
-import { createClient } from '../../lib/supabase'
+import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 
 interface UserProfileProps {
@@ -12,7 +12,6 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
   const router = useRouter()
 
   const handleSignOut = async () => {
-    const supabase = createClient()
     await supabase.auth.signOut()
     router.push('/login')
     router.refresh()
