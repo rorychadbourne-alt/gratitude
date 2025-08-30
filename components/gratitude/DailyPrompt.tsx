@@ -28,12 +28,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
         if (promptError) {
           console.error('Error fetching prompt:', promptError)
-          return
+          // Don't return here - let the "No prompt available" message show
+        } else {
+          setPrompt(promptData)
         }
-
-        setPrompt(promptData)
       } catch (error) {
-        console.error('Error:', error)
+        console.error('Network error:', error)
       } finally {
         setLoading(false)
       }
