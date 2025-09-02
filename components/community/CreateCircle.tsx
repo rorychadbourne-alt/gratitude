@@ -13,6 +13,7 @@ export default function CreateCircle({ user, onCircleCreated }: CreateCircleProp
   const [description, setDescription] = useState('')
   const [loading, setLoading] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [createdCode, setCreatedCode] = useState<string | null>(null)
 
   const generateInviteCode = () => {
     const characters = 'ABCDEFGHIJKLMNPQRSTUVWXYZ123456789' // Removed confusing chars like 0, O, I, L
@@ -29,6 +30,7 @@ export default function CreateCircle({ user, onCircleCreated }: CreateCircleProp
 
     setLoading(true)
     setMessage(null)
+    setCreatedCode(null)
 
     try {
       const inviteCode = generateInviteCode()
@@ -59,7 +61,8 @@ export default function CreateCircle({ user, onCircleCreated }: CreateCircleProp
 
       setName('')
       setDescription('')
-      setMessage('Circle created! Share your invite code with others.')
+      setCreatedCode(inviteCode)
+      setMessage('Circle created successfully!')
       onCircleCreated()
 
     } catch (error: any) {
@@ -85,7 +88,18 @@ export default function CreateCircle({ user, onCircleCreated }: CreateCircleProp
             ? 'bg-red-50 text-red-700 border border-red-200'
             : 'bg-green-50 text-green-700 border border-green-200'
         }`}>
-          {message}
+          {createdCode ? (
+            <div>
+              <p className="font-medium">{message}</p>
+              <p className="text-sm mt-2">Share this invite code with others:</p>
+              <div className="mt-2 p-3 bg-white rounded border font-mono text-center text-lg font-bold tracking-wider">
+                {createdCode}
+              </div>
+              <p className="text-xs mt-2">Anyone with this code can join your circle</p>
+            </div>
+          ) : (
+            message
+          )}
         </div>
       )}
 
