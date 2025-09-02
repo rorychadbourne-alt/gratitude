@@ -64,28 +64,34 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-bold text-gray-900">
-              Gratitude Circle
-            </h1>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+  <div className="max-w-6xl mx-auto px-4">
+    <div className="flex justify-between items-center h-16">
+      <h1 className="text-xl font-bold text-gray-900">
+        Gratitude Circle
+      </h1>
+      <div className="flex items-center space-x-4">
+        <button
+          onClick={() => router.push('/communities')}
+          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+        >
+          Communities
+        </button>
+        <button
+          onClick={() => router.push('/profile')}
+          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+        >
+          Profile
+        </button>
+        <button
+          onClick={handleSignOut}
+          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+        >
+          Sign Out
+        </button>
+      </div>
+    </div>
+  </div>
+</nav>
 
       <div className="container mx-auto px-4">
         <UserProfile user={user} profile={profile} />
