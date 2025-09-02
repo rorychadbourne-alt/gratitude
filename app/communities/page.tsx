@@ -5,10 +5,12 @@ import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import CreateCircle from '../../components/community/CreateCircle'
 import JoinCircle from '../../components/community/JoinCircle'
+import MyCircles from '../../components/community/MyCircles'
 
 export default function CommunitiesPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
   const router = useRouter()
 
   useEffect(() => {
@@ -28,8 +30,7 @@ export default function CommunitiesPage() {
   }, [router])
 
   const handleCircleCreated = () => {
-    // This will refresh any circle lists when we add them
-    console.log('Circle created or joined successfully')
+    setRefreshTrigger(prev => prev + 1)
   }
 
   const handleSignOut = async () => {
@@ -94,9 +95,12 @@ export default function CommunitiesPage() {
           </p>
         </header>
 
-        <div className="grid gap-8 md:grid-cols-2">
-          <CreateCircle user={user} onCircleCreated={handleCircleCreated} />
-          <JoinCircle user={user} onCircleJoined={handleCircleCreated} />
+        <div className="space-y-8">
+          <div className="grid gap-8 md:grid-cols-2">
+            <CreateCircle user={user} onCircleCreated={handleCircleCreated} />
+            <JoinCircle user={user} onCircleJoined={handleCircleCreated} />
+          </div>
+          <MyCircles user={user} refreshTrigger={refreshTrigger} />
         </div>
       </div>
     </div>
