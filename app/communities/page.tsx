@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import CreateCircle from '../../components/community/CreateCircle'
+import JoinCircle from '../../components/community/JoinCircle'
 
 export default function CommunitiesPage() {
   const [user, setUser] = useState<any>(null)
@@ -28,7 +29,7 @@ export default function CommunitiesPage() {
 
   const handleCircleCreated = () => {
     // This will refresh any circle lists when we add them
-    console.log('Circle created successfully')
+    console.log('Circle created or joined successfully')
   }
 
   const handleSignOut = async () => {
@@ -93,8 +94,9 @@ export default function CommunitiesPage() {
           </p>
         </header>
 
-        <div className="space-y-8">
+        <div className="grid gap-8 md:grid-cols-2">
           <CreateCircle user={user} onCircleCreated={handleCircleCreated} />
+          <JoinCircle user={user} onCircleJoined={handleCircleCreated} />
         </div>
       </div>
     </div>
