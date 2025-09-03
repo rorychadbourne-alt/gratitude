@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import MultiSelect from '../ui/MultiSelect'
 
 interface DailyPromptProps {
   user: any
@@ -14,53 +15,104 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
+  const [userCircles, setUserCircles] = useState<any[]>([])
+  const [selectedCircles, setSelectedCircles] = useState<string[]>([])
 
   useEffect(() => {
-    const fetchTodaysPrompt = async () => {
-      if (!user?.id) return
-      
-      try {
-        const { data: promptData, error: promptError } = await supabase
-          .from('gratitude_prompts')
-          .select('*')
-          .eq('date', new Date().toISOString().split('T')[0])
-          .single()
-
-        if (promptError) {
-          console.error('Error fetching prompt:', promptError)
-          // Don't return here - let the "No prompt available" message show
-        } else {
-          setPrompt(promptData)
-        }
-      } catch (error) {
-        console.error('Network error:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
     fetchTodaysPrompt()
+    fetchUserCircles()
   }, [user?.id])
+
+  const fetchTodaysPrompt = async () => {
+    if (!user?.id) return
+    
+    try {
+      const { data: promptData, error: promptError } = await supabase
+        .from('gratitude_prompts')
+        .select('*')
+        .eq('date', new Date().toISOString().split('T')[0])
+        .single()
+
+      if (promptError) {
+        console.error('Error fetching prompt:', promptError)
+      } else {
+        setPrompt(promptData)
+      }
+    } catch (error) {
+      console.error('Network error:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const fetchUserCircles = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data, error } = await supabase
+        .from('circle_members')
+        .select(`
+          circles (
+            id,
+            name
+          )
+        `)
+        .eq('user_id', user.id)
+
+      if (error) throw error
+
+      const circles = data?.map(item => item.circles).filter(Boolean) || []
+      setUserCircles(circles)
+    } catch (error) {
+      console.error('Error fetching user circles:', error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!response.trim() || !prompt || !user?.id) return
 
+    if (response.trim().length > 1000) {
+      setMessage('Response must be less than 1000 characters')
+      return
+    }
+
     setSubmitting(true)
     setMessage(null)
 
     try {
-      const { error } = await supabase
+      // Create the gratitude response
+      const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
           user_id: user.id,
           prompt_id: prompt.id,
           response_text: response.trim()
         })
+        .select()
+        .single()
 
-      if (error) throw error
+      if (responseError) throw responseError
+
+      // If circles are selected, add them to response_circles table
+      if (selectedCircles.length > 0) {
+        const circleInserts = selectedCircles.map(circleId => ({
+          response_id: responseData.id,
+          circle_id: circleId
+        }))
+
+        const { error: circlesError } = await supabase
+          .from('response_circles')
+          .insert(circleInserts)
+
+        if (circlesError) {
+          console.error('Error linking response to circles:', circlesError)
+          // Don't throw here - the response was still created successfully
+        }
+      }
       
       setResponse('')
+      setSelectedCircles([])
       setMessage('Thank you for sharing your gratitude!')
       
       if (onNewResponse) {
@@ -119,7 +171,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       {message && (
         <div className={`p-4 rounded-md mb-4 ${
-          message.includes('Error') 
+          message.includes('Error') || message.includes('must be') 
             ? 'bg-red-50 text-red-700 border border-red-200'
             : 'bg-green-50 text-green-700 border border-green-200'
         }`}>
@@ -129,19 +181,43 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       <form onSubmit={handleSubmit}>
         <div className="mb-4">
+          <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
+            <span>Share your thoughts</span>
+            <span className={response.length > 900 ? 'text-orange-600' : 'text-gray-400'}>
+              {response.length}/1000
+            </span>
+          </div>
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
             placeholder="Share what you&apos;re grateful for..."
             required
             rows={4}
+            maxLength={1000}
             className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
           />
         </div>
 
+        {userCircles.length > 0 && (
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Share with circles (optional)
+            </label>
+            <MultiSelect
+              options={userCircles.map(circle => ({ id: circle.id, name: circle.name }))}
+              selected={selectedCircles}
+              onChange={setSelectedCircles}
+              placeholder="Choose circles to share with..."
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              Your response will be visible to members of selected circles. Leave empty to keep private.
+            </p>
+          </div>
+        )}
+
         <button
           type="submit"
-          disabled={submitting || !response.trim()}
+          disabled={submitting || !response.trim() || response.length > 1000}
           className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
         >
           {submitting ? 'Sharing...' : 'Share Gratitude'}
