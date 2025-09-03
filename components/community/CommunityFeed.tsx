@@ -49,7 +49,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
 
       if (membersError) throw membersError
 
-      const memberUserIds = [...new Set(allMembers?.map(m => m.user_id) || [])]
+      const memberUserIds = Array.from(new Set(allMembers?.map(m => m.user_id) || []))
 
       if (memberUserIds.length === 0) {
         setResponses([])
