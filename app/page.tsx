@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import { useRouter } from 'next/navigation'
 import DailyPrompt from '../components/gratitude/DailyPrompt'
 import GratitudeHistory from '../components/gratitude/GratitudeHistory'
+import CommunityFeed from '../components/community/CommunityFeed'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -51,7 +52,7 @@ export default function Dashboard() {
       mounted = false
       subscription.unsubscribe()
     }
-  }, []) // Remove router from dependencies
+  }, [])
 
   const handleNewResponse = () => {
     setRefreshTrigger(prev => prev + 1)
@@ -84,36 +85,36 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
-  <div className="max-w-6xl mx-auto px-4">
-    <div className="flex justify-between items-center h-16">
-      <h1 className="text-xl font-bold text-gray-900">
-        Gratitude Circle
-      </h1>
-      <div className="flex items-center space-x-4">
-        <button
-          onClick={() => router.push('/communities')}
-          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-        >
-          Communities
-        </button>
-        <button
-          onClick={() => router.push('/profile')}
-          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-        >
-          Profile
-        </button>
-        <button
-          onClick={handleSignOut}
-          className="text-gray-600 hover:text-gray-900 text-sm font-medium"
-        >
-          Sign Out
-        </button>
-      </div>
-    </div>
-  </div>
-</nav>
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            <h1 className="text-xl font-bold text-gray-900">
+              Gratitude Circle
+            </h1>
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={() => router.push('/communities')}
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                Communities
+              </button>
+              <button
+                onClick={() => router.push('/profile')}
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                Profile
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      </nav>
 
-      <div className="max-w-2xl mx-auto px-4 py-8">
+      <div className="max-w-6xl mx-auto px-4 py-8">
         <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Good day, {user.email?.split('@')[0]} 👋
@@ -125,7 +126,10 @@ export default function Dashboard() {
 
         <div className="space-y-8">
           <DailyPrompt user={user} onNewResponse={handleNewResponse} />
-          <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
+          <div className="grid gap-8 lg:grid-cols-2">
+            <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
+            <CommunityFeed user={user} />
+          </div>
         </div>
       </div>
     </div>
