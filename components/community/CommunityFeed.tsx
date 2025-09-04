@@ -19,17 +19,22 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
     if (!user?.id) return
 
     try {
+      console.log('Fetching community responses for user:', user.id)
+      
       // Get circles user belongs to
       const { data: userCircles, error: circlesError } = await supabase
         .from('circle_members')
         .select('circle_id')
         .eq('user_id', user.id)
 
+      console.log('User circles:', userCircles)
       if (circlesError) throw circlesError
       
       const circleIds = userCircles?.map(c => c.circle_id) || []
+      console.log('Circle IDs:', circleIds)
       
       if (circleIds.length === 0) {
+        console.log('No circles found for user')
         setResponses([])
         setLoading(false)
         return
@@ -41,11 +46,14 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         .select('response_id, circle_id')
         .in('circle_id', circleIds)
 
+      console.log('Shared response IDs:', sharedResponseIds)
       if (sharedError) throw sharedError
 
       const responseIds = sharedResponseIds?.map(sr => sr.response_id) || []
+      console.log('Response IDs to fetch:', responseIds)
 
       if (responseIds.length === 0) {
+        console.log('No shared responses found')
         setResponses([])
         setLoading(false)
         return
@@ -68,6 +76,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         .in('id', responseIds)
         .order('created_at', { ascending: false })
 
+      console.log('Final community responses:', communityResponses)
       if (responsesError) throw responsesError
 
       setResponses(communityResponses || [])
