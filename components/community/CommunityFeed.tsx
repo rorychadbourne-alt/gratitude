@@ -19,78 +19,58 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
     if (!user?.id) return
 
     try {
-      // Get all circles the user belongs to
+      // Get circles user belongs to
       const { data: userCircles, error: circlesError } = await supabase
         .from('circle_members')
         .select('circle_id')
         .eq('user_id', user.id)
 
       if (circlesError) throw circlesError
-
+      
       const circleIds = userCircles?.map(c => c.circle_id) || []
-
+      
       if (circleIds.length === 0) {
         setResponses([])
         setLoading(false)
         return
       }
 
-      // Get responses that were explicitly shared with these circles
-      const { data: sharedResponses, error: responsesError } = await supabase
+      // Get response IDs that were shared with these circles
+      const { data: sharedResponseIds, error: sharedError } = await supabase
         .from('response_circles')
+        .select('response_id, circle_id')
+        .in('circle_id', circleIds)
+
+      if (sharedError) throw sharedError
+
+      const responseIds = sharedResponseIds?.map(sr => sr.response_id) || []
+
+      if (responseIds.length === 0) {
+        setResponses([])
+        setLoading(false)
+        return
+      }
+
+      // Get the actual responses
+      const { data: communityResponses, error: responsesError } = await supabase
+        .from('gratitude_responses')
         .select(`
-          response_id,
-          circles (
-            id,
-            name
+          *,
+          gratitude_prompts (
+            prompt,
+            date
           ),
-          gratitude_responses (
-            id,
-            response_text,
-            created_at,
-            user_id,
-            gratitude_prompts (
-              prompt,
-              date
-            ),
-            profiles (
-              full_name,
-              email
-            )
+          profiles (
+            full_name,
+            email
           )
         `)
-        .in('circle_id', circleIds)
-        .order('shared_at', { ascending: false })
-        .limit(50)
+        .in('id', responseIds)
+        .order('created_at', { ascending: false })
 
       if (responsesError) throw responsesError
 
-      // Transform the data structure for easier rendering
-      const transformedResponses = sharedResponses?.filter(item => item.gratitude_responses).map(item => ({
-        id: item.gratitude_responses.id,
-        response_text: item.gratitude_responses.response_text,
-        created_at: item.gratitude_responses.created_at,
-        user_id: item.gratitude_responses.user_id,
-        gratitude_prompts: item.gratitude_responses.gratitude_prompts,
-        profiles: item.gratitude_responses.profiles,
-        shared_circle: item.circles
-      })) || []
-
-      // Group by response_id to show all circles a response was shared with
-      const groupedResponses = transformedResponses.reduce((acc, item) => {
-        const existing = acc.find(r => r.id === item.id)
-        if (existing) {
-          existing.shared_circles.push(item.shared_circle)
-        } else {
-          acc.push({
-            ...item,
-            shared_circles: [item.shared_circle]
-          })
-        }
-        return acc
-      }, [] as any[])
-
-      setResponses(groupedResponses)
+      setResponses(communityResponses || [])
     } catch (error) {
       console.error('Error fetching community responses:', error)
     } finally {
@@ -153,29 +133,10 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
                   </span>
                 )}
               </span>
-              <span className="text-gray-400">•</span>
-              <div className="flex flex-wrap gap-1">
-                {response.shared_circles.map((circle: any) => (
-                  <span
-                    key={circle.id}
-                    className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
-                  >
-                    {circle.name}
-                  </span>
-                ))}
-              </div>
             </div>
             <div className="text-right">
               <p className="text-xs text-gray-400">
                 {new Date(response.created_at).toLocaleDateString()}
-              </p>
-              <p className="text-xs text-gray-500">
-                {response.gratitude_prompts?.date ? 
-                  new Date(response.gratitude_prompts.date).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric'
-                  }) : 'Unknown date'
-                }
               </p>
             </div>
           </div>
