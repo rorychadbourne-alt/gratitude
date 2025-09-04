@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation'
 import DailyPrompt from '../components/gratitude/DailyPrompt'
 import GratitudeHistory from '../components/gratitude/GratitudeHistory'
 import CommunityFeed from '../components/community/CommunityFeed'
+import OnboardingFlow from '../components/onboarding/OnboardingFlow'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
+  const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
   const router = useRouter()
@@ -28,6 +30,15 @@ export default function Dashboard() {
         }
 
         setUser(session.user)
+
+        // Get user profile to check onboarding status
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        setProfile(profileData)
         setLoading(false)
       } catch (error) {
         console.error('Error getting session:', error)
@@ -58,6 +69,19 @@ export default function Dashboard() {
     setRefreshTrigger(prev => prev + 1)
   }
 
+  const handleOnboardingComplete = () => {
+    // Refresh profile data after onboarding
+    const refreshProfile = async () => {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single()
+      setProfile(profileData)
+    }
+    refreshProfile()
+  }
+
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut()
@@ -82,6 +106,12 @@ export default function Dashboard() {
     return null
   }
 
+  // Show onboarding for new users
+  if (profile && !profile.onboarding_completed) {
+    return <OnboardingFlow user={user} onComplete={handleOnboardingComplete} />
+  }
+
+  // Show normal dashboard for existing users
   return (
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
