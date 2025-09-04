@@ -35,58 +35,62 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         return
       }
 
-      // Get all members of these circles
-      const { data: allMembers, error: membersError } = await supabase
-        .from('circle_members')
+      // Get responses that were explicitly shared with these circles
+      const { data: sharedResponses, error: responsesError } = await supabase
+        .from('response_circles')
         .select(`
-          user_id,
+          response_id,
           circles (
             id,
             name
+          ),
+          gratitude_responses (
+            id,
+            response_text,
+            created_at,
+            user_id,
+            gratitude_prompts (
+              prompt,
+              date
+            ),
+            profiles (
+              full_name,
+              email
+            )
           )
         `)
         .in('circle_id', circleIds)
-
-      if (membersError) throw membersError
-
-      const memberUserIds = Array.from(new Set(allMembers?.map(m => m.user_id) || []))
-
-      if (memberUserIds.length === 0) {
-        setResponses([])
-        setLoading(false)
-        return
-      }
-
-      // Get all responses from these users
-      const { data: communityResponses, error: responsesError } = await supabase
-        .from('gratitude_responses')
-        .select(`
-          *,
-          gratitude_prompts (
-            prompt,
-            date
-          ),
-          profiles (
-            full_name,
-            email
-          )
-        `)
-        .in('user_id', memberUserIds)
-        .order('created_at', { ascending: false })
+        .order('shared_at', { ascending: false })
         .limit(50)
 
       if (responsesError) throw responsesError
 
-      // Add circle information to each response
-      const responsesWithCircles = communityResponses?.map(response => {
-        const userMemberships = allMembers?.filter(m => m.user_id === response.user_id) || []
-        return {
-          ...response,
-          user_circles: userMemberships.map(m => m.circles)
-        }
-      }) || []
+      // Transform the data structure for easier rendering
+      const transformedResponses = sharedResponses?.map(item => ({
+        id: item.gratitude_responses.id,
+        response_text: item.gratitude_responses.response_text,
+        created_at: item.gratitude_responses.created_at,
+        user_id: item.gratitude_responses.user_id,
+        gratitude_prompts: item.gratitude_responses.gratitude_prompts,
+        profiles: item.gratitude_responses.profiles,
+        shared_circle: item.circles
+      })) || []
 
-      setResponses(responsesWithCircles)
+      // Group by response_id to show all circles a response was shared with
+      const groupedResponses = transformedResponses.reduce((acc, item) => {
+        const existing = acc.find(r => r.id === item.id)
+        if (existing) {
+          existing.shared_circles.push(item.shared_circle)
+        } else {
+          acc.push({
+            ...item,
+            shared_circles: [item.shared_circle]
+          })
+        }
+        return acc
+      }, [] as any[])
+
+      setResponses(groupedResponses)
     } catch (error) {
       console.error('Error fetching community responses:', error)
     } finally {
@@ -123,9 +127,9 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
     return (
       <div className="bg-white rounded-lg shadow-sm p-8 text-center">
         <h3 className="text-lg font-semibold text-gray-900 mb-4">Community Feed</h3>
-        <p className="text-gray-500 mb-4">No community responses yet.</p>
+        <p className="text-gray-500 mb-4">No shared responses yet.</p>
         <p className="text-sm text-gray-400">
-          Join some circles and encourage members to share their gratitude!
+          When you and your circle members share gratitude with circles, it will appear here.
         </p>
       </div>
     )
@@ -134,7 +138,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
   return (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Community Feed ({responses.length} responses)
+        Community Feed ({responses.length} shared responses)
       </h3>
       
       {responses.map((response) => (
@@ -151,7 +155,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
               </span>
               <span className="text-gray-400">•</span>
               <div className="flex flex-wrap gap-1">
-                {response.user_circles.map((circle: any, index: number) => (
+                {response.shared_circles.map((circle: any) => (
                   <span
                     key={circle.id}
                     className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded"
