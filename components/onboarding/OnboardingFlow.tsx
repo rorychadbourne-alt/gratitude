@@ -116,7 +116,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
                 Your First Gratitude Entry
               </h2>
               <p className="text-gray-600">
-                Let's start with a special prompt to begin your journey
+                Let&apos;s start with a special prompt to begin your journey
               </p>
             </div>
             <div className="max-w-2xl mx-auto">
@@ -197,7 +197,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
                 <span className="text-4xl">✨</span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                You're All Set!
+                You&apos;re All Set!
               </h2>
               <p className="text-xl text-gray-600 max-w-md mx-auto">
                 Your gratitude journey begins now. Remember, consistency is key to building a meaningful practice.
@@ -343,7 +343,7 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
         <textarea
           value={response}
           onChange={(e) => setResponse(e.target.value)}
-          placeholder="Share why you're grateful for starting this journey..."
+          placeholder="Share why you&apos;re grateful for starting this journey..."
           rows={4}
           className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           required
