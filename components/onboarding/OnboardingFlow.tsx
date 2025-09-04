@@ -257,16 +257,21 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
     e.preventDefault()
     if (!response.trim()) return
 
+    console.log('Starting onboarding gratitude submission...')
     setSubmitting(true)
     try {
       // Create a special onboarding prompt if it doesn't exist
+      console.log('Looking for onboarding prompt...')
       let { data: prompt, error: promptError } = await supabase
         .from('gratitude_prompts')
         .select('*')
         .eq('prompt', 'I am grateful I started this daily practice because...')
         .single()
 
+      console.log('Prompt result:', { prompt, promptError })
+
       if (promptError || !prompt) {
+        console.log('Creating new onboarding prompt...')
         const { data: newPrompt, error: createError } = await supabase
           .from('gratitude_prompts')
           .insert({
@@ -276,23 +281,31 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
           .select()
           .single()
 
+        console.log('New prompt result:', { newPrompt, createError })
         if (createError) throw createError
         prompt = newPrompt
       }
 
       // Create the response
-      await supabase
+      console.log('Creating gratitude response...')
+      const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
           user_id: user.id,
           prompt_id: prompt.id,
           response_text: response.trim()
         })
+        .select()
 
+      console.log('Response result:', { responseData, responseError })
+      if (responseError) throw responseError
+
+      console.log('Success! Setting submitted state...')
       setSubmitted(true)
       
       // Auto-advance after showing success message
       setTimeout(() => {
+        console.log('Auto-advancing to next step...')
         onSubmit()
       }, 1500)
       
@@ -313,7 +326,7 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
           Beautiful! Your first gratitude has been saved.
         </h3>
         <p className="text-green-700 text-sm">
-          You&apos;ve taken the first step in your gratitude journey.
+          You've taken the first step in your gratitude journey.
         </p>
       </div>
     )
