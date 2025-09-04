@@ -116,7 +116,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
                 Your First Gratitude Entry
               </h2>
               <p className="text-gray-600">
-                Let&apos;s start with a special prompt to begin your journey
+                Let's start with a special prompt to begin your journey
               </p>
             </div>
             <div className="max-w-2xl mx-auto">
@@ -197,7 +197,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
                 <span className="text-4xl">✨</span>
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                You&apos;re All Set!
+                You're All Set!
               </h2>
               <p className="text-xl text-gray-600 max-w-md mx-auto">
                 Your gratitude journey begins now. Remember, consistency is key to building a meaningful practice.
@@ -260,40 +260,42 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
     console.log('Starting onboarding gratitude submission...')
     setSubmitting(true)
     try {
-      // Create a special onboarding prompt if it doesn't exist
-      console.log('Looking for onboarding prompt...')
-      let { data: prompt, error: promptError } = await supabase
+      // Get today's prompt instead of creating a special one
+      console.log('Getting today\'s prompt...')
+      const { data: todayPrompt, error: promptError } = await supabase
         .from('gratitude_prompts')
         .select('*')
-        .eq('prompt', 'I am grateful I started this daily practice because...')
+        .eq('date', new Date().toISOString().split('T')[0])
         .single()
 
-      console.log('Prompt result:', { prompt, promptError })
+      console.log('Today\'s prompt result:', { todayPrompt, promptError })
 
+      let prompt = todayPrompt
+      
+      // If no prompt for today, get any available prompt as fallback
       if (promptError || !prompt) {
-        console.log('Creating new onboarding prompt...')
-        const { data: newPrompt, error: createError } = await supabase
+        console.log('No today prompt, getting any available prompt...')
+        const { data: anyPrompt, error: anyError } = await supabase
           .from('gratitude_prompts')
-          .insert({
-            prompt: 'I am grateful I started this daily practice because...',
-            date: new Date().toISOString().split('T')[0]
-          })
-          .select()
+          .select('*')
+          .limit(1)
           .single()
-
-        console.log('New prompt result:', { newPrompt, createError })
-        if (createError) throw createError
-        prompt = newPrompt
+        
+        console.log('Fallback prompt result:', { anyPrompt, anyError })
+        if (anyError || !anyPrompt) {
+          throw new Error('No prompts available')
+        }
+        prompt = anyPrompt
       }
 
-      // Create the response
+      // Create the response with the custom onboarding text but using an existing prompt
       console.log('Creating gratitude response...')
       const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
           user_id: user.id,
           prompt_id: prompt.id,
-          response_text: response.trim()
+          response_text: `I am grateful I started this daily practice because ${response.trim()}`
         })
         .select()
 
@@ -303,7 +305,6 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
       console.log('Success! Setting submitted state...')
       setSubmitted(true)
       
-      // Auto-advance after showing success message
       setTimeout(() => {
         console.log('Auto-advancing to next step...')
         onSubmit()
@@ -342,7 +343,7 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
         <textarea
           value={response}
           onChange={(e) => setResponse(e.target.value)}
-          placeholder="Share why you&apos;re grateful for starting this journey..."
+          placeholder="Share why you're grateful for starting this journey..."
           rows={4}
           className="w-full px-4 py-3 border border-blue-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
           required
