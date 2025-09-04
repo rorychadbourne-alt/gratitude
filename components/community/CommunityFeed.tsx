@@ -66,7 +66,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
       if (responsesError) throw responsesError
 
       // Transform the data structure for easier rendering
-      const transformedResponses = sharedResponses?.map(item => ({
+      const transformedResponses = sharedResponses?.filter(item => item.gratitude_responses).map(item => ({
         id: item.gratitude_responses.id,
         response_text: item.gratitude_responses.response_text,
         created_at: item.gratitude_responses.created_at,
