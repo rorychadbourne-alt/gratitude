@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
-import DailyPrompt from '../gratitude/DailyPrompt'
 import CreateCircle from '../community/CreateCircle'
 import JoinCircle from '../community/JoinCircle'
 
@@ -252,6 +251,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
 function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: () => void }) {
   const [response, setResponse] = useState('')
   const [submitting, setSubmitting] = useState(false)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -289,12 +289,34 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
           response_text: response.trim()
         })
 
-      onSubmit()
+      setSubmitted(true)
+      
+      // Auto-advance after showing success message
+      setTimeout(() => {
+        onSubmit()
+      }, 1500)
+      
     } catch (error) {
       console.error('Error submitting onboarding response:', error)
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="bg-green-50 rounded-lg p-6 text-center">
+        <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">✅</span>
+        </div>
+        <h3 className="text-lg font-semibold text-green-900 mb-2">
+          Beautiful! Your first gratitude has been saved.
+        </h3>
+        <p className="text-green-700 text-sm">
+          You&apos;ve taken the first step in your gratitude journey.
+        </p>
+      </div>
+    )
   }
 
   return (
