@@ -67,10 +67,6 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
           gratitude_prompts (
             prompt,
             date
-          ),
-          profiles (
-            full_name,
-            email
           )
         `)
         .in('id', responseIds)
@@ -88,13 +84,8 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
   }
 
   const getDisplayName = (response: any) => {
-    if (response.profiles?.full_name) {
-      return response.profiles.full_name
-    }
-    if (response.profiles?.email) {
-      return response.profiles.email.split('@')[0]
-    }
-    return 'Anonymous'
+    // For now, show a shortened user ID since profiles table isn't linked
+    return `User ${response.user_id.slice(0, 8)}...`
   }
 
   if (loading) {
