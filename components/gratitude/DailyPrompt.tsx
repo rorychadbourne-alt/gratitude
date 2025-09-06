@@ -178,7 +178,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     <div className="bg-white rounded-lg shadow-sm p-6">
       <div className="mb-6">
         <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Today's Gratitude Prompt
+          Today&apos;s Gratitude Prompt
         </h2>
         <p className="text-gray-600 text-sm">
           {new Date().toLocaleDateString('en-US', { 
@@ -217,7 +217,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            placeholder="Share what you're grateful for..."
+            placeholder="Share what you&apos;re grateful for..."
             required
             rows={4}
             maxLength={1000}
