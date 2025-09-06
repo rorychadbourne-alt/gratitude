@@ -91,8 +91,13 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen organic-background" style={{
-        background: 'linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)'
+      <div className="min-h-screen relative" style={{
+        background: `
+          radial-gradient(circle at 20% 30%, rgba(247, 228, 184, 0.3) 0%, transparent 40%),
+          radial-gradient(circle at 80% 70%, rgba(237, 197, 95, 0.2) 0%, transparent 40%),
+          radial-gradient(circle at 60% 20%, rgba(244, 243, 255, 0.4) 0%, transparent 40%),
+          linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)
+        `
       }}>
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -113,8 +118,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen organic-background" style={{
-      background: 'linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)'
+    <div className="min-h-screen relative" style={{
+      background: `
+        radial-gradient(circle at 20% 30%, rgba(247, 228, 184, 0.3) 0%, transparent 40%),
+        radial-gradient(circle at 80% 70%, rgba(237, 197, 95, 0.2) 0%, transparent 40%),
+        radial-gradient(circle at 60% 20%, rgba(244, 243, 255, 0.4) 0%, transparent 40%),
+        linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)
+      `
     }}>
       {/* Content overlay */}
       <div className="relative z-10">
