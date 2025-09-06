@@ -95,7 +95,7 @@ export default function GratitudeHistory({ user, refreshTrigger }: GratitudeHist
           </div>
           <p className="font-brand text-sage-600 mb-2">Your journey begins today</p>
           <p className="font-brand text-sm text-sage-500">
-            Start by sharing what you're grateful for above
+            Start by sharing what you&apos;re grateful for above
           </p>
         </div>
       ) : (
