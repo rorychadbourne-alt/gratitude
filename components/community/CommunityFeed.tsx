@@ -85,18 +85,18 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
 
   const getDisplayName = (response: any) => {
     // For now, show a shortened user ID since profiles table isn't linked
-    return `User ${response.user_id.slice(0, 8)}...`
+    return `Community Member ${response.user_id.slice(0, 8)}`
   }
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Community Feed</h3>
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
+        <div className="h-6 bg-gradient-to-r from-periwinkle-200 to-peach-200 rounded-lg mb-6 animate-pulse"></div>
         {[1, 2, 3].map((i) => (
-          <div key={i} className="bg-white rounded-lg shadow-sm p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-1/4 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
-            <div className="h-12 bg-gray-200 rounded"></div>
+          <div key={i} className="border-l-4 border-periwinkle-300 pl-4 mb-6 animate-pulse">
+            <div className="h-4 bg-warm-200 rounded w-1/4 mb-2"></div>
+            <div className="h-4 bg-warm-200 rounded w-3/4 mb-3"></div>
+            <div className="h-16 bg-warm-200 rounded"></div>
           </div>
         ))}
       </div>
@@ -105,51 +105,87 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
 
   if (responses.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Community Feed</h3>
-        <p className="text-gray-500 mb-4">No shared responses yet.</p>
-        <p className="text-sm text-gray-400">
-          When you and your circle members share gratitude with circles, it will appear here.
-        </p>
+      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
+        <div className="flex items-center space-x-3 mb-6">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center shadow-md">
+            <span className="text-lg">🤝</span>
+          </div>
+          <h3 className="font-display text-2xl font-semibold text-sage-800">
+            Community Feed
+          </h3>
+        </div>
+        
+        <div className="text-center py-12">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-periwinkle-100 to-warm-100 flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">💝</span>
+          </div>
+          <p className="font-brand text-sage-600 mb-2">No shared responses yet</p>
+          <p className="font-brand text-sm text-sage-500 max-w-sm mx-auto">
+            When you and your circle members share gratitude with circles, it will appear here
+          </p>
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">
-        Community Feed ({responses.length} shared responses)
-      </h3>
-      
-      {responses.map((response) => (
-        <div key={response.id} className="bg-white rounded-lg shadow-sm p-4 border-l-4 border-green-500">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex items-center space-x-2">
-              <span className="font-medium text-gray-900">
-                {getDisplayName(response)}
-                {response.user_id === user.id && (
-                  <span className="ml-2 text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    You
-                  </span>
-                )}
-              </span>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-400">
-                {new Date(response.created_at).toLocaleDateString()}
-              </p>
-            </div>
-          </div>
-          
-          <p className="text-sm font-medium text-gray-700 mb-2">
-            {response.gratitude_prompts?.prompt || 'Unknown prompt'}
-          </p>
-          
-          <p className="text-gray-900 leading-relaxed">
-            {response.response_text}
-          </p>
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
+      <div className="flex items-center space-x-3 mb-8">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center shadow-md">
+          <span className="text-lg">🤝</span>
         </div>
-      ))}
+        <h3 className="font-display text-2xl font-semibold text-sage-800">
+          Community Feed
+        </h3>
+        <span className="font-brand text-sm bg-periwinkle-100 text-periwinkle-700 px-3 py-1 rounded-full">
+          {responses.length} shared {responses.length === 1 ? 'response' : 'responses'}
+        </span>
+      </div>
+      
+      <div className="space-y-6">
+        {responses.map((response) => (
+          <div
+            key={response.id}
+            className="border-l-4 border-periwinkle-400 pl-6 py-4 bg-gradient-to-r from-periwinkle-50 to-warm-50 rounded-r-xl hover:shadow-sm transition-shadow duration-200"
+          >
+            <div className="flex justify-between items-start mb-3">
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-300 to-periwinkle-400 flex items-center justify-center">
+                  <span className="text-xs font-brand font-bold text-white">
+                    {response.user_id.slice(0, 2).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-brand font-medium text-sage-800">
+                    {getDisplayName(response)}
+                    {response.user_id === user.id && (
+                      <span className="ml-2 text-xs bg-gold-100 text-gold-800 px-2 py-1 rounded-full">
+                        You
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="font-brand text-xs text-sage-500">
+                  {new Date(response.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric'
+                  })}
+                </p>
+              </div>
+            </div>
+            
+            <h4 className="font-display text-lg font-medium text-sage-800 mb-3 leading-relaxed">
+              {response.gratitude_prompts?.prompt || 'Personal reflection'}
+            </h4>
+            
+            <p className="font-brand text-sage-700 leading-relaxed bg-white/60 p-4 rounded-lg">
+              {response.response_text}
+            </p>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
