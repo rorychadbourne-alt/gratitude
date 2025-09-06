@@ -91,10 +91,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-morning-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-cream-50 to-cream-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-periwinkle-400 to-periwinkle-500 animate-pulse mx-auto mb-6"></div>
-          <p className="font-body text-sage-600">Loading your gratitude space...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your gratitude space...</p>
         </div>
       </div>
     )
@@ -109,35 +109,34 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-morning-gradient">
-      {/* Navigation */}
-      <nav className="bg-morning-gradient backdrop-blur-sm border-b border-cream-200 shadow-soft sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-6">
-          <div className="flex justify-between items-center h-20">
+    <div className="min-h-screen bg-gradient-to-br from-cream-50 to-cream-100">
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-brand bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center">
-                <span className="text-white text-lg font-brand font-semibold">G</span>
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">G</span>
               </div>
-              <h1 className="font-brand font-semibold text-2xl text-sage-800">
+              <h1 className="text-xl font-bold text-gray-900">
                 Gratitude Circle
               </h1>
             </div>
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/communities')}
-                className="font-brand text-sage-600 hover:text-periwinkle-600 px-3 py-2 rounded-brand transition-colors duration-200"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium px-3 py-2 rounded-md transition-colors"
               >
                 Communities
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="font-brand text-sage-600 hover:text-periwinkle-600 px-3 py-2 rounded-brand transition-colors duration-200"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium px-3 py-2 rounded-md transition-colors"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="bg-gradient-to-r from-gold-100 to-peach-100 text-periwinkle-700 font-brand font-medium text-sm py-2 px-4 rounded-brand-lg shadow-soft hover:shadow-gentle hover:scale-105 transition-all duration-200"
+                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
               >
                 Sign Out
               </button>
@@ -146,20 +145,19 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-6 py-12">
-        <header className="mb-12 text-center">
-          <h1 className="font-brand font-semibold text-5xl text-sage-800 mb-4">
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <header className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Good morning, {user.email?.split('@')[0]} ✨
           </h1>
-          <p className="font-body text-lg text-sage-600 max-w-2xl mx-auto leading-relaxed">
+          <p className="text-gray-600 max-w-2xl mx-auto">
             Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
           </p>
         </header>
 
-        <div className="space-y-12">
+        <div className="space-y-8">
           <DailyPrompt user={user} onNewResponse={handleNewResponse} />
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="grid gap-8 lg:grid-cols-2">
             <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
             <CommunityFeed user={user} />
           </div>
