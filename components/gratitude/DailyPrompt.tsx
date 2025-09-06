@@ -158,50 +158,46 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8 animate-pulse">
-        <div className="h-6 bg-gradient-to-r from-gray-200 to-warm-100 rounded-lg mb-6"></div>
-        <div className="h-32 bg-gradient-to-r from-gray-200 to-warm-100 rounded-lg mb-6"></div>
-        <div className="h-12 bg-gradient-to-r from-periwinkle-200 to-periwinkle-300 rounded-xl"></div>
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8 animate-pulse">
+        <div className="h-6 bg-gradient-to-r from-periwinkle-200 to-gold-200 rounded-lg mb-6"></div>
+        <div className="h-32 bg-gradient-to-r from-warm-200 to-peach-200 rounded-lg mb-6"></div>
+        <div className="h-12 bg-gradient-to-r from-periwinkle-300 to-gold-300 rounded-xl"></div>
       </div>
     )
   }
 
   if (!prompt) {
     return (
-      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center mx-auto mb-4">
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-300 to-peach-300 flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🌅</span>
         </div>
-        <p className="font-brand text-gray-500">No prompt available for today.</p>
+        <p className="font-brand text-sage-600">No prompt available for today.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="inline-flex items-center space-x-3 mb-4">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-            <span className="text-xl">✨</span>
+    <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
+      {/* Prompt Display */}
+      <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
+        <div className="flex items-center space-x-3 mb-4">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
+            <span className="text-sm">✨</span>
           </div>
-          <h2 className="font-display text-2xl font-semibold text-gray-900">
-            Today&apos;s Gratitude
-          </h2>
+          <div>
+            <h3 className="font-brand text-sm font-medium text-sage-600">Today's Gratitude</h3>
+            <p className="font-brand text-xs text-sage-500">
+              {new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
+          </div>
         </div>
-        <p className="font-brand text-sm text-gray-500">
-          {new Date().toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
-          })}
-        </p>
-      </div>
-
-      {/* Prompt */}
-      <div className="mb-8 p-6 bg-gradient-to-br from-periwinkle-50 via-white to-warm-100 rounded-xl border border-periwinkle-100 shadow-sm">
-        <p className="font-display text-xl text-gray-800 text-center font-medium leading-relaxed">
+        
+        <p className="font-display text-xl text-sage-800 font-medium leading-relaxed">
           {prompt.prompt}
         </p>
       </div>
@@ -221,27 +217,27 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <div className="flex justify-between items-center mb-3">
-            <label className="font-brand text-sm font-medium text-gray-700">
+            <label className="font-brand text-sm font-medium text-sage-700">
               Share your thoughts
             </label>
-            <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-gray-400'}`}>
+            <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
               {response.length}/1000
             </span>
           </div>
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            placeholder="What fills your heart with gratitude today..."
+            placeholder="Share your response..."
             required
             rows={5}
             maxLength={1000}
-            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-gray-900 placeholder-gray-500 transition-all duration-200"
+            className="w-full px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm"
           />
         </div>
 
         {userCircles.length > 0 && (
           <div>
-            <label className="block font-brand text-sm font-medium text-gray-700 mb-3">
+            <label className="block font-brand text-sm font-medium text-sage-700 mb-3">
               Share with circles (optional)
             </label>
             <MultiSelect
@@ -250,7 +246,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               onChange={setSelectedCircles}
               placeholder="Choose circles to share with..."
             />
-            <p className="font-brand text-xs text-gray-500 mt-2">
+            <p className="font-brand text-xs text-sage-500 mt-2">
               Your response will be visible to members of selected circles. Leave empty to keep private.
             </p>
           </div>
