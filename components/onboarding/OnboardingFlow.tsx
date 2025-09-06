@@ -112,7 +112,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
                 Your First Gratitude Entry
               </h2>
               <p className="font-brand text-sage-600 text-lg">
-                Let's start with a special prompt to begin your journey
+                Let&apos;s start with a special prompt to begin your journey
               </p>
             </div>
             <div className="max-w-3xl mx-auto">
@@ -193,7 +193,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
                 <span className="text-5xl">✨</span>
               </div>
               <h2 className="font-display text-4xl font-semibold text-sage-800 mb-6">
-                You're All Set!
+                You&apos;re All Set!
               </h2>
               <p className="font-brand text-xl text-sage-600 max-w-2xl mx-auto leading-relaxed">
                 Your gratitude journey begins now. Remember, consistency is key to building a meaningful practice.
