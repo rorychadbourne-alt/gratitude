@@ -321,7 +321,7 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
           Beautiful! Your first gratitude has been saved.
         </h3>
         <p className="font-brand text-sage-600">
-          You've taken the first step in your gratitude journey.
+          You&apos;ve taken the first step in your gratitude journey.
         </p>
       </div>
     )
