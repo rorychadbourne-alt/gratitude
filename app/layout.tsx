@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   title: 'Gratitude Circle - Daily Gratitude Practice',
   description: 'Share daily gratitude and connect with your community',
 }
-
+ 
 export default function RootLayout({
   children,
 }: {
