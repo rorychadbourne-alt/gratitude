@@ -295,7 +295,8 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
         .insert({
           user_id: user.id,
           prompt_id: prompt.id,
-          response_text: `I am grateful I started this daily practice because ${response.trim()}`
+          response_text: `I am grateful I started this daily practice because ${response.trim()}`,
+          is_onboarding_response: true
         })
         .select()
 

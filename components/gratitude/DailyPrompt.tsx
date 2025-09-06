@@ -17,6 +17,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [message, setMessage] = useState<string | null>(null)
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [selectedCircles, setSelectedCircles] = useState<string[]>([])
+  const [existingResponse, setExistingResponse] = useState<any>(null)
 
   useEffect(() => {
     fetchTodaysPrompt()
@@ -37,6 +38,20 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         console.error('Error fetching prompt:', promptError)
       } else {
         setPrompt(promptData)
+
+        // Check if user already responded today (excluding onboarding responses)
+        const { data: responseData } = await supabase
+          .from('gratitude_responses')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('prompt_id', promptData.id)
+          .eq('is_onboarding_response', false)
+          .single()
+
+        if (responseData) {
+          setExistingResponse(responseData)
+          setResponse(responseData.response_text)
+        }
       }
     } catch (error) {
       console.error('Network error:', error)
@@ -81,49 +96,65 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     setMessage(null)
 
     try {
-      // Create the gratitude response
-      const { data: responseData, error: responseError } = await supabase
-        .from('gratitude_responses')
-        .insert({
-          user_id: user.id,
-          prompt_id: prompt.id,
-          response_text: response.trim()
-        })
-        .select()
-        .single()
+      if (existingResponse) {
+        // Update existing response
+        const { data, error } = await supabase
+          .from('gratitude_responses')
+          .update({ response_text: response.trim() })
+          .eq('id', existingResponse.id)
+          .select()
+          .single()
 
-      if (responseError) throw responseError
+        if (error) throw error
+        
+        setExistingResponse(data)
+        setMessage('Your response has been updated! ✨')
+      } else {
+        // Create the gratitude response
+        const { data: responseData, error: responseError } = await supabase
+          .from('gratitude_responses')
+          .insert({
+            user_id: user.id,
+            prompt_id: prompt.id,
+            response_text: response.trim(),
+            is_onboarding_response: false
+          })
+          .select()
+          .single()
 
-      // If circles are selected, add them to response_circles table
-      if (selectedCircles.length > 0) {
-        const circleInserts = selectedCircles.map(circleId => ({
-          response_id: responseData.id,
-          circle_id: circleId
-        }))
+        if (responseError) throw responseError
 
-        const { error: circlesError } = await supabase
-          .from('response_circles')
-          .insert(circleInserts)
+        // If circles are selected, add them to response_circles table
+        if (selectedCircles.length > 0) {
+          const circleInserts = selectedCircles.map(circleId => ({
+            response_id: responseData.id,
+            circle_id: circleId
+          }))
 
-        if (circlesError) {
-          console.error('Error linking response to circles:', circlesError)
-          // Don't throw here - the response was still created successfully
+          const { error: circlesError } = await supabase
+            .from('response_circles')
+            .insert(circleInserts)
+
+          if (circlesError) {
+            console.error('Error linking response to circles:', circlesError)
+          }
         }
+        
+        setExistingResponse(responseData)
+        setMessage('Thank you for sharing your gratitude! 🙏')
       }
       
-      setResponse('')
       setSelectedCircles([])
-      setMessage('Thank you for sharing your gratitude!')
       
       if (onNewResponse) {
         onNewResponse()
       }
       
-      setTimeout(() => setMessage(null), 3000)
+      setTimeout(() => setMessage(null), 4000)
       
     } catch (error: any) {
       console.error('Submit error:', error)
-      setMessage(`Error: ${error.message}`)
+      setMessage(`Something went wrong. Please try again.`)
     } finally {
       setSubmitting(false)
     }
@@ -131,29 +162,38 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
-        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-        <div className="h-32 bg-gray-200 rounded mb-4"></div>
-        <div className="h-10 bg-gray-200 rounded"></div>
+      <div className="card-morning p-8 animate-pulse">
+        <div className="h-6 bg-gradient-to-r from-cream-200 to-peach-200 rounded-brand mb-6"></div>
+        <div className="h-32 bg-gradient-to-r from-cream-200 to-peach-200 rounded-brand mb-6"></div>
+        <div className="h-12 bg-gradient-to-r from-periwinkle-200 to-periwinkle-300 rounded-brand-lg"></div>
       </div>
     )
   }
 
   if (!prompt) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-        <p className="text-gray-500">No prompt available for today.</p>
+      <div className="card-morning p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-300 to-peach-300 flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">🌅</span>
+        </div>
+        <p className="text-body text-sage-600">No prompt available for today.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Today&apos;s Gratitude Prompt
-        </h2>
-        <p className="text-gray-600 text-sm">
+    <div className="card-morning p-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center space-x-3 mb-4">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center">
+            <span className="text-xl">✨</span>
+          </div>
+          <h2 className="text-display text-display-md text-sage-800">
+            Today&apos;s Gratitude
+          </h2>
+        </div>
+        <p className="text-caption text-sage-500">
           {new Date().toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -163,44 +203,47 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         </p>
       </div>
 
-      <div className="mb-6">
-        <p className="text-lg text-gray-800 font-medium leading-relaxed">
+      {/* Prompt */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-periwinkle-50 to-cream-50 rounded-brand-lg border border-periwinkle-100">
+        <p className="text-heading text-heading-lg text-sage-700 text-center leading-relaxed">
           {prompt.prompt}
         </p>
       </div>
 
+      {/* Success Message */}
       {message && (
-        <div className={`p-4 rounded-md mb-4 ${
-          message.includes('Error') || message.includes('must be') 
-            ? 'bg-red-50 text-red-700 border border-red-200'
-            : 'bg-green-50 text-green-700 border border-green-200'
-        }`}>
-          {message}
+        <div className="mb-6 p-4 bg-gradient-to-r from-gold-100 to-peach-100 border border-gold-200 rounded-brand-lg">
+          <p className="text-body text-center text-sage-700 font-medium">
+            {message}
+          </p>
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-            <span>Share your thoughts</span>
-            <span className={response.length > 900 ? 'text-orange-600' : 'text-gray-400'}>
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <label className="text-heading text-sage-700 font-medium">
+              Share your thoughts
+            </label>
+            <span className={`text-caption ${response.length > 900 ? 'text-periwinkle-600' : 'text-sage-400'}`}>
               {response.length}/1000
             </span>
           </div>
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            placeholder="Share what you&apos;re grateful for..."
+            placeholder="What fills your heart with gratitude today..."
             required
-            rows={4}
+            rows={5}
             maxLength={1000}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
+            className="textarea-field w-full"
           />
         </div>
 
         {userCircles.length > 0 && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div>
+            <label className="block text-heading text-sage-700 font-medium mb-3">
               Share with circles (optional)
             </label>
             <MultiSelect
@@ -209,7 +252,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               onChange={setSelectedCircles}
               placeholder="Choose circles to share with..."
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-caption text-sage-500 mt-2">
               Your response will be visible to members of selected circles. Leave empty to keep private.
             </p>
           </div>
@@ -218,9 +261,18 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         <button
           type="submit"
           disabled={submitting || !response.trim() || response.length > 1000}
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+          className="btn-primary w-full py-4 text-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
         >
-          {submitting ? 'Sharing...' : 'Share Gratitude'}
+          {submitting ? (
+            <span className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Sharing...</span>
+            </span>
+          ) : existingResponse ? (
+            'Update Response'
+          ) : (
+            'Share Gratitude'
+          )}
         </button>
       </form>
     </div>

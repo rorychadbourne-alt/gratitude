@@ -1,0 +1,85 @@
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* Custom animations */
+@keyframes gentle-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+@keyframes soft-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+/* Component classes using your design tokens */
+@layer components {
+  /* Cards */
+  .card-morning {
+    @apply bg-gradient-to-br from-cream-50 to-peach-50 rounded-brand-lg shadow-gentle border border-cream-200;
+  }
+  
+  .card-trust {
+    @apply bg-gradient-to-br from-periwinkle-50 to-cream-50 rounded-brand-lg shadow-soft border border-periwinkle-100;
+  }
+
+  /* Buttons */
+  .btn-primary {
+    @apply bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 
+           text-white font-brand font-medium 
+           px-6 py-3 rounded-brand-lg shadow-gentle
+           hover:shadow-warm hover:scale-105 
+           active:scale-95 transition-all duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-gradient-to-r from-gold-100 to-peach-100 
+           text-periwinkle-700 font-brand font-medium
+           px-6 py-3 rounded-brand-lg shadow-soft
+           hover:shadow-gentle hover:scale-105 
+           active:scale-95 transition-all duration-200;
+  }
+
+  /* Inputs */
+  .input-field {
+    @apply bg-cream-50 border-2 border-cream-200 rounded-brand
+           px-4 py-3 font-body text-sage-800
+           focus:border-periwinkle-300 focus:bg-white 
+           focus:ring-4 focus:ring-periwinkle-100
+           transition-all duration-200;
+  }
+  
+  .textarea-field {
+    @apply input-field resize-none;
+  }
+
+  /* Typography */
+  .text-display {
+    @apply font-brand font-semibold text-sage-800;
+  }
+  
+  .text-heading {
+    @apply font-brand font-medium text-sage-700;
+  }
+  
+  .text-body {
+    @apply font-body text-sage-600 leading-relaxed;
+  }
+  
+  .text-caption {
+    @apply font-body text-sm text-sage-500;
+  }
+
+  /* Navigation */
+  .nav-primary {
+    @apply bg-morning-gradient backdrop-blur-sm border-b border-cream-200 shadow-soft;
+  }
+  
+  .nav-link {
+    @apply font-brand text-sage-600 hover:text-periwinkle-600 
+           px-3 py-2 rounded-brand transition-colors duration-200;
+  }
+  
+  .nav-link-active {
+    @apply nav-link bg-periwinkle-100 text-periwinkle-700;
+  }
+}

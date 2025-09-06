@@ -93,10 +93,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-morning-gradient flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your gratitude space...</p>
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-periwinkle-400 to-periwinkle-500 animate-soft-pulse mx-auto mb-6"></div>
+          <p className="text-body font-body text-sage-600">Loading your gratitude space...</p>
         </div>
       </div>
     )
@@ -113,29 +113,35 @@ export default function Dashboard() {
 
   // Show normal dashboard for existing users
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-bold text-gray-900">
-              Gratitude Circle
-            </h1>
-            <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-morning-gradient">
+      {/* Navigation */}
+      <nav className="nav-primary sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-6">
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-brand bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center">
+                <span className="text-white text-lg font-brand font-semibold">G</span>
+              </div>
+              <h1 className="text-display text-display-sm text-sage-800">
+                Gratitude Circle
+              </h1>
+            </div>
+            <div className="flex items-center space-x-6">
               <button
                 onClick={() => router.push('/communities')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="nav-link"
               >
                 Communities
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="nav-link"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="btn-secondary text-sm py-2 px-4"
               >
                 Sign Out
               </button>
@@ -144,19 +150,20 @@ export default function Dashboard() {
         </div>
       </nav>
 
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Good day, {user.email?.split('@')[0]} 👋
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-6 py-12">
+        <header className="mb-12 text-center">
+          <h1 className="text-display text-display-lg text-sage-800 mb-4">
+            Good morning, {user.email?.split('@')[0]} ✨
           </h1>
-          <p className="text-gray-600">
-            Take a moment to reflect and share your gratitude.
+          <p className="text-body text-body-lg text-sage-600 max-w-2xl mx-auto">
+            Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
           </p>
         </header>
 
-        <div className="space-y-8">
+        <div className="space-y-12">
           <DailyPrompt user={user} onNewResponse={handleNewResponse} />
-          <div className="grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-12 lg:grid-cols-2">
             <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
             <CommunityFeed user={user} />
           </div>
