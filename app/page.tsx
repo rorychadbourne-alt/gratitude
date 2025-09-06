@@ -91,9 +91,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-cream-50 to-cream-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading your gratitude space...</p>
         </div>
       </div>
@@ -109,34 +109,29 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-cream-50 to-cream-100">
-      <nav className="bg-white/80 backdrop-blur-sm border-b border-gray-200 shadow-sm">
+    <div className="min-h-screen bg-gray-50">
+      <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-periwinkle-400 to-periwinkle-500 flex items-center justify-center">
-                <span className="text-white text-sm font-bold">G</span>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900">
-                Gratitude Circle
-              </h1>
-            </div>
+            <h1 className="text-xl font-bold text-gray-900">
+              Gratitude Circle
+            </h1>
             <div className="flex items-center space-x-4">
               <button
                 onClick={() => router.push('/communities')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium px-3 py-2 rounded-md transition-colors"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
               >
                 Communities
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium px-3 py-2 rounded-md transition-colors"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
               >
                 Sign Out
               </button>
@@ -146,12 +141,12 @@ export default function Dashboard() {
       </nav>
 
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <header className="mb-8 text-center">
+        <header className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Good morning, {user.email?.split('@')[0]} ✨
+            Good day, {user.email?.split('@')[0]}
           </h1>
-          <p className="text-gray-600 max-w-2xl mx-auto">
-            Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
+          <p className="text-gray-600">
+            Take a moment to reflect and share your gratitude.
           </p>
         </header>
 
@@ -164,5 +159,5 @@ export default function Dashboard() {
         </div>
       </div>
     </div>
-  ) 
-}  
+  )
+}
