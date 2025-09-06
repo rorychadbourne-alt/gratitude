@@ -91,10 +91,9 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative">
-        <div className="fixed inset-0 bg-morning-gradient"></div>
-        <div className="fixed inset-0 bg-organic-contours bg-repeat opacity-40"></div>
-        <div className="fixed inset-0 bg-flowing-texture bg-repeat opacity-20 animate-pulse" style={{animationDuration: '8s'}}></div>
+      <div className="min-h-screen organic-background" style={{
+        background: 'linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)'
+      }}>
         <div className="relative z-10 flex items-center justify-center min-h-screen">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
@@ -114,16 +113,13 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen relative">
-      {/* Organic background layers */}
-      <div className="fixed inset-0 bg-morning-gradient"></div>
-      <div className="fixed inset-0 bg-organic-contours bg-repeat opacity-40"></div>
-      <div className="fixed inset-0 bg-flowing-texture bg-repeat opacity-20 animate-pulse" style={{animationDuration: '8s'}}></div>
-      
+    <div className="min-h-screen organic-background" style={{
+      background: 'linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)'
+    }}>
       {/* Content overlay */}
       <div className="relative z-10">
         {/* Navigation */}
-        <nav className="bg-white/85 backdrop-blur-md shadow-sm border-b border-white/50 sticky top-0 z-50">
+        <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
           <div className="max-w-6xl mx-auto px-4">
             <div className="flex justify-between items-center h-16">
               <div className="flex items-center space-x-3">
@@ -149,7 +145,7 @@ export default function Dashboard() {
                 </button>
                 <button
                   onClick={handleSignOut}
-                  className="bg-periwinkle-100/80 backdrop-blur-sm text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200/80 transition-all duration-200"
+                  className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
                 >
                   Sign Out
                 </button>
