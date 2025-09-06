@@ -91,9 +91,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-warm-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+        
           <p className="mt-4 text-gray-600">Loading your gratitude space...</p>
         </div>
       </div>
@@ -109,7 +110,7 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-warm-50">
       <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">

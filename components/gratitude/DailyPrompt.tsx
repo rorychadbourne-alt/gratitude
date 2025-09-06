@@ -221,7 +221,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             required
             rows={4}
             maxLength={1000}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
+            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
           />
         </div>
 
@@ -245,7 +245,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         <button
           type="submit"
           disabled={submitting || !response.trim() || response.length > 1000}
-          className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+          className="w-full bg-periwinkle-500 text-white py-3 px-6 rounded-lg hover:bg-periwinkle-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
         >
           {submitting ? 'Sharing...' : existingResponse ? 'Update Response' : 'Share Gratitude'}
         </button>
