@@ -158,29 +158,38 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6 animate-pulse">
-        <div className="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-        <div className="h-32 bg-gray-200 rounded mb-4"></div>
-        <div className="h-10 bg-gray-200 rounded"></div>
+      <div className="bg-white rounded-xl shadow-sm p-8 animate-pulse">
+        <div className="h-6 bg-gradient-to-r from-gray-200 to-warm-100 rounded-lg mb-6"></div>
+        <div className="h-32 bg-gradient-to-r from-gray-200 to-warm-100 rounded-lg mb-6"></div>
+        <div className="h-12 bg-gradient-to-r from-periwinkle-200 to-periwinkle-300 rounded-xl"></div>
       </div>
     )
   }
 
   if (!prompt) {
     return (
-      <div className="bg-white rounded-lg shadow-sm p-6 text-center">
-        <p className="text-gray-500">No prompt available for today.</p>
+      <div className="bg-white rounded-xl shadow-sm p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gray-200 to-gray-300 flex items-center justify-center mx-auto mb-4">
+          <span className="text-2xl">🌅</span>
+        </div>
+        <p className="font-brand text-gray-500">No prompt available for today.</p>
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-2">
-          Today&apos;s Gratitude Prompt
-        </h2>
-        <p className="text-gray-600 text-sm">
+    <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
+      {/* Header */}
+      <div className="text-center mb-8">
+        <div className="inline-flex items-center space-x-3 mb-4">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
+            <span className="text-xl">✨</span>
+          </div>
+          <h2 className="font-display text-2xl font-semibold text-gray-900">
+            Today&apos;s Gratitude
+          </h2>
+        </div>
+        <p className="font-brand text-sm text-gray-500">
           {new Date().toLocaleDateString('en-US', { 
             weekday: 'long', 
             year: 'numeric', 
@@ -190,14 +199,16 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         </p>
       </div>
 
-      <div className="mb-6">
-        <p className="text-lg text-gray-800 font-medium leading-relaxed">
+      {/* Prompt */}
+      <div className="mb-8 p-6 bg-gradient-to-br from-periwinkle-50 via-white to-warm-100 rounded-xl border border-periwinkle-100 shadow-sm">
+        <p className="font-display text-xl text-gray-800 text-center font-medium leading-relaxed">
           {prompt.prompt}
         </p>
       </div>
 
+      {/* Success Message */}
       {message && (
-        <div className={`p-4 rounded-md mb-4 ${
+        <div className={`p-4 rounded-xl mb-6 font-brand font-medium text-center ${
           message.includes('Error') || message.includes('must be') 
             ? 'bg-red-50 text-red-700 border border-red-200'
             : 'bg-green-50 text-green-700 border border-green-200'
@@ -206,28 +217,31 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <div className="flex justify-between items-center text-sm text-gray-500 mb-2">
-            <span>Share your thoughts</span>
-            <span className={response.length > 900 ? 'text-orange-600' : 'text-gray-400'}>
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div>
+          <div className="flex justify-between items-center mb-3">
+            <label className="font-brand text-sm font-medium text-gray-700">
+              Share your thoughts
+            </label>
+            <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-gray-400'}`}>
               {response.length}/1000
             </span>
           </div>
           <textarea
             value={response}
             onChange={(e) => setResponse(e.target.value)}
-            placeholder="Share what you&apos;re grateful for..."
+            placeholder="What fills your heart with gratitude today..."
             required
-            rows={4}
+            rows={5}
             maxLength={1000}
-            className="w-full px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none text-gray-900 placeholder-gray-500"
+            className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-gray-900 placeholder-gray-500 transition-all duration-200"
           />
         </div>
 
         {userCircles.length > 0 && (
-          <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+          <div>
+            <label className="block font-brand text-sm font-medium text-gray-700 mb-3">
               Share with circles (optional)
             </label>
             <MultiSelect
@@ -236,7 +250,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               onChange={setSelectedCircles}
               placeholder="Choose circles to share with..."
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="font-brand text-xs text-gray-500 mt-2">
               Your response will be visible to members of selected circles. Leave empty to keep private.
             </p>
           </div>
@@ -245,9 +259,18 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         <button
           type="submit"
           disabled={submitting || !response.trim() || response.length > 1000}
-          className="w-full bg-periwinkle-500 text-white py-3 px-6 rounded-lg hover:bg-periwinkle-600 disabled:opacity-50 disabled:cursor-not-allowed font-medium transition-colors"
+          className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
         >
-          {submitting ? 'Sharing...' : existingResponse ? 'Update Response' : 'Share Gratitude'}
+          {submitting ? (
+            <span className="flex items-center justify-center space-x-2">
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span>Sharing...</span>
+            </span>
+          ) : existingResponse ? (
+            'Update Response'
+          ) : (
+            'Share Gratitude'
+          )}
         </button>
       </form>
     </div>
