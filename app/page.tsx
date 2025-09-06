@@ -91,19 +91,10 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen relative" style={{
-        background: `
-          radial-gradient(circle at 20% 30%, rgba(247, 228, 184, 0.3) 0%, transparent 40%),
-          radial-gradient(circle at 80% 70%, rgba(237, 197, 95, 0.2) 0%, transparent 40%),
-          radial-gradient(circle at 60% 20%, rgba(244, 243, 255, 0.4) 0%, transparent 40%),
-          linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)
-        `
-      }}>
-        <div className="relative z-10 flex items-center justify-center min-h-screen">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600 font-brand">Loading your gratitude space...</p>
-          </div>
+      <div className="min-h-screen bg-morning-gradient flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-brand">Loading your gratitude space...</p>
         </div>
       </div>
     )
@@ -118,69 +109,59 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen relative" style={{
-      background: `
-        radial-gradient(circle at 20% 30%, rgba(247, 228, 184, 0.3) 0%, transparent 40%),
-        radial-gradient(circle at 80% 70%, rgba(237, 197, 95, 0.2) 0%, transparent 40%),
-        radial-gradient(circle at 60% 20%, rgba(244, 243, 255, 0.4) 0%, transparent 40%),
-        linear-gradient(135deg, #fdf9f0 0%, #fef8f4 50%, #fefdf8 100%)
-      `
-    }}>
-      {/* Content overlay */}
-      <div className="relative z-10">
-        {/* Navigation */}
-        <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
-          <div className="max-w-6xl mx-auto px-4">
-            <div className="flex justify-between items-center h-16">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-                  <span className="text-white text-sm font-bold">G</span>
-                </div>
-                <h1 className="text-xl font-brand font-bold text-gray-900">
-                  Gratitude Circle
-                </h1>
+    <div className="min-h-screen bg-morning-gradient">
+      {/* Navigation */}
+      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
+                <span className="text-white text-sm font-bold">G</span>
               </div>
-              <div className="flex items-center space-x-6">
-                <button
-                  onClick={() => router.push('/communities')}
-                  className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
-                >
-                  Communities
-                </button>
-                <button
-                  onClick={() => router.push('/profile')}
-                  className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
-                >
-                  Profile
-                </button>
-                <button
-                  onClick={handleSignOut}
-                  className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
-                >
-                  Sign Out
-                </button>
-              </div>
+              <h1 className="text-xl font-brand font-bold text-gray-900">
+                Gratitude Circle
+              </h1>
+            </div>
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => router.push('/communities')}
+                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+              >
+                Communities
+              </button>
+              <button
+                onClick={() => router.push('/profile')}
+                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+              >
+                Profile
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
+              >
+                Sign Out
+              </button>
             </div>
           </div>
-        </nav>
+        </div>
+      </nav>
 
-        {/* Main Content */}
-        <div className="max-w-6xl mx-auto px-4 py-8">
-          <header className="mb-12 text-center">
-            <h1 className="font-display text-5xl font-semibold text-sage-800 mb-4 leading-tight">
-              Good morning, {user.email?.split('@')[0]}
-            </h1>
-            <p className="text-gray-600 font-brand text-lg max-w-2xl mx-auto leading-relaxed">
-              Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
-            </p>
-          </header>
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <header className="mb-12 text-center">
+          <h1 className="font-display text-5xl font-semibold text-sage-800 mb-4 leading-tight">
+            Good morning, {user.email?.split('@')[0]}
+          </h1>
+          <p className="text-gray-600 font-brand text-lg max-w-2xl mx-auto leading-relaxed">
+            Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
+          </p>
+        </header>
 
-          <div className="space-y-12">
-            <DailyPrompt user={user} onNewResponse={handleNewResponse} />
-            <div className="grid gap-12 lg:grid-cols-2">
-              <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
-              <CommunityFeed user={user} />
-            </div>
+        <div className="space-y-12">
+          <DailyPrompt user={user} onNewResponse={handleNewResponse} />
+          <div className="grid gap-12 lg:grid-cols-2">
+            <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
+            <CommunityFeed user={user} />
           </div>
         </div>
       </div>
