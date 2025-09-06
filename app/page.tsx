@@ -93,9 +93,8 @@ export default function Dashboard() {
     return (
       <div className="min-h-screen bg-warm-50 flex items-center justify-center">
         <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
-        
-          <p className="mt-4 text-gray-600">Loading your gratitude space...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-brand">Loading your gratitude space...</p>
         </div>
       </div>
     )
@@ -111,28 +110,34 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-warm-50">
-      <nav className="bg-white shadow-sm border-b border-gray-200 mb-8">
+      {/* Navigation */}
+      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 mb-8 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            <h1 className="text-xl font-bold text-gray-900">
-              Gratitude Circle
-            </h1>
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
+                <span className="text-white text-sm font-bold">G</span>
+              </div>
+              <h1 className="text-xl font-brand font-bold text-gray-900">
+                Gratitude Circle
+              </h1>
+            </div>
+            <div className="flex items-center space-x-6">
               <button
                 onClick={() => router.push('/communities')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
               >
                 Communities
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
               >
                 Sign Out
               </button>
@@ -141,19 +146,20 @@ export default function Dashboard() {
         </div>
       </nav>
 
+      {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Good day, {user.email?.split('@')[0]}
+        <header className="mb-12 text-center">
+          <h1 className="font-display text-5xl font-semibold text-gray-900 mb-4 leading-tight">
+            Good morning, {user.email?.split('@')[0]}
           </h1>
-          <p className="text-gray-600">
-            Take a moment to reflect and share your gratitude.
+          <p className="text-gray-600 font-brand text-lg max-w-2xl mx-auto leading-relaxed">
+            Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
           </p>
         </header>
 
-        <div className="space-y-8">
+        <div className="space-y-12">
           <DailyPrompt user={user} onNewResponse={handleNewResponse} />
-          <div className="grid gap-8 lg:grid-cols-2">
+          <div className="grid gap-12 lg:grid-cols-2">
             <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
             <CommunityFeed user={user} />
           </div>
