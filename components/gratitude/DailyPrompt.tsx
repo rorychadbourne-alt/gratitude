@@ -186,7 +186,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             <span className="text-sm">✨</span>
           </div>
           <div>
-            <h3 className="font-brand text-sm font-medium text-sage-600">Today's Gratitude</h3>
+            <h3 className="font-brand text-sm font-medium text-sage-600">Today&apos;s Gratitude</h3>
             <p className="font-brand text-xs text-sage-500">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
