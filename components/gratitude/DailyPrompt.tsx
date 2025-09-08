@@ -205,27 +205,22 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
       {/* Prompt Display */}
       <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
-              <span className="text-sm">✨</span>
-            </div>
-            <div>
-              <h3 className="font-brand text-sm font-medium text-sage-600">Today&apos;s Gratitude</h3>
-              <p className="font-brand text-xs text-sage-500">
-                {new Date().toLocaleDateString('en-US', { 
-                  weekday: 'long', 
-                  month: 'long', 
-                  day: 'numeric' 
-                })}
-              </p>
-            </div>
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today's Gratitude</h3>
+            <p className="font-brand text-xs text-sage-500">
+              {new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
           </div>
           
           {/* Weekly Streak Ring */}
           <WeeklyStreakRings 
             ringsCompleted={weeklyStreak.rings_completed} 
-            size={40}
+            size={60}
           />
         </div>
         

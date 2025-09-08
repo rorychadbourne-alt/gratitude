@@ -25,18 +25,22 @@ export default function WeeklyStreakRings({
   ]
 
   const center = size / 2
-  const circumference = (radius: number) => 2 * Math.PI * radius
 
   return (
     <div 
       className={`relative ${className}`}
       onMouseEnter={() => setShowTooltip(true)}
       onMouseLeave={() => setShowTooltip(false)}
+      style={{ width: size, height: size }}
     >
-      <svg width={size} height={size} className="transform -rotate-90">
+      <svg 
+        width={size} 
+        height={size} 
+        className="transform -rotate-90"
+        style={{ borderRadius: '50%' }}
+      >
         {rings.map(({ radius, strokeWidth, ring }) => {
           const isCompleted = ringsCompleted >= ring
-          const circumf = circumference(radius)
           
           return (
             <g key={ring}>
@@ -60,11 +64,9 @@ export default function WeeklyStreakRings({
                   fill={ring === 5 ? "#f2d485" : "none"}
                   stroke="#edc55f"
                   strokeWidth={strokeWidth}
-                  strokeDasharray={circumf}
-                  strokeDashoffset={0}
                   className="transition-all duration-500 ease-out"
                   style={{
-                    animation: isCompleted ? `fillRing 0.6s ease-out ${(ring - 1) * 0.1}s both` : 'none'
+                    animation: `fillRing 0.6s ease-out ${(ring - 1) * 0.1}s both`
                   }}
                 />
               )}
@@ -98,7 +100,7 @@ export default function WeeklyStreakRings({
       <style jsx>{`
         @keyframes fillRing {
           from {
-            stroke-dashoffset: ${circumference(26)};
+            stroke-dashoffset: 100;
             opacity: 0;
           }
           to {
