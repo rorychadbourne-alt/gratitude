@@ -207,7 +207,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today's Gratitude</h3>
+            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
             <p className="font-brand text-xs text-sage-500">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
