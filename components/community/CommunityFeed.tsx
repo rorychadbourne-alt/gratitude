@@ -14,11 +14,15 @@ interface Community {
   ringsCompleted: number
   todayActive: number
   totalMembers: number
+  ring_color?: string
+  center_emoji?: string
 }
 
 interface CircleData {
   id: string
   name: string
+  ring_color?: string
+  center_emoji?: string
 }
 
 interface UserCircle {
@@ -55,7 +59,9 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
           circle_id,
           circles!inner (
             id,
-            name
+            name,
+            ring_color,
+            center_emoji
           )
         `)
         .eq('user_id', user.id) as { data: UserCircle[] | null, error: any }
@@ -99,7 +105,9 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             name: circle.name,
             ringsCompleted: Math.floor(Math.random() * 6), // TODO: Replace with actual streak calculation
             todayActive: uniqueActiveToday.size,
-            totalMembers: totalMembers || 0
+            totalMembers: totalMembers || 0,
+            ring_color: circle.ring_color || 'periwinkle',
+            center_emoji: circle.center_emoji || '🤝'
           }
         })
       )
