@@ -16,6 +16,16 @@ interface Community {
   totalMembers: number
 }
 
+interface CircleData {
+  id: string
+  name: string
+}
+
+interface UserCircle {
+  circle_id: string
+  circles: CircleData
+}
+
 export default function CommunityFeed({ user }: CommunityFeedProps) {
   const [responses, setResponses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -38,17 +48,17 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
     try {
       console.log('Fetching user communities for user:', user.id)
       
-      // Get circles user belongs to
+      // Get circles user belongs to with explicit typing
       const { data: userCircles, error: circlesError } = await supabase
         .from('circle_members')
         .select(`
           circle_id,
-          circles (
+          circles!inner (
             id,
             name
           )
         `)
-        .eq('user_id', user.id)
+        .eq('user_id', user.id) as { data: UserCircle[] | null, error: any }
 
       if (circlesError) throw circlesError
 
@@ -60,8 +70,13 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
 
       // Get community data for each circle
       const communityData = await Promise.all(
-        userCircles.map(async (uc) => {
+        userCircles.map(async (uc: UserCircle) => {
           const circle = uc.circles
+          
+          // Add type safety check
+          if (!circle?.id || !circle?.name) {
+            return null
+          }
           
           // Get total members count
           const { count: totalMembers } = await supabase
@@ -87,13 +102,15 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             totalMembers: totalMembers || 0
           }
         })
-      ) 
+      )
 
-      setCommunities(communityData)
+      // Filter out null values
+      const validCommunityData = communityData.filter(Boolean) as Community[]
+      setCommunities(validCommunityData)
       
       // Auto-select first community
-      if (communityData.length > 0 && !selectedCommunityId) {
-        setSelectedCommunityId(communityData[0].id)
+      if (validCommunityData.length > 0 && !selectedCommunityId) {
+        setSelectedCommunityId(validCommunityData[0].id)
       }
       
     } catch (error) {
