@@ -87,7 +87,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             totalMembers: totalMembers || 0
           }
         })
-      )
+      ) 
 
       setCommunities(communityData)
       
