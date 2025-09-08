@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import MultiSelect from '../ui/MultiSelect'
+import WeeklyStreakRings from '../ui/WeeklyStreakRings'
+import { getCurrentWeekStreak, updateWeeklyStreak } from '../../lib/streakHelpers'
 
 interface DailyPromptProps {
   user: any
@@ -18,11 +20,26 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [selectedCircles, setSelectedCircles] = useState<string[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
+  const [weeklyStreak, setWeeklyStreak] = useState({ rings_completed: 0 })
 
   useEffect(() => {
     fetchTodaysPrompt()
     fetchUserCircles()
+    fetchWeeklyStreak()
   }, [user?.id])
+
+  const fetchWeeklyStreak = async () => {
+    if (!user?.id) return
+
+    try {
+      const { data } = await getCurrentWeekStreak(user.id)
+      if (data) {
+        setWeeklyStreak(data)
+      }
+    } catch (error) {
+      console.error('Error fetching weekly streak:', error)
+    }
+  }
 
   const fetchTodaysPrompt = async () => {
     if (!user?.id) return
@@ -108,6 +125,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         setExistingResponse(data)
         setMessage('Your response has been updated!')
       } else {
+        // Create the gratitude response
         const { data: responseData, error: responseError } = await supabase
           .from('gratitude_responses')
           .insert({
@@ -120,6 +138,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           .single()
 
         if (responseError) throw responseError
+
+        // Update weekly streak for new responses only
+        const { data: updatedStreak } = await updateWeeklyStreak(user.id)
+        if (updatedStreak) {
+          setWeeklyStreak(updatedStreak)
+        }
 
         if (selectedCircles.length > 0) {
           const circleInserts = selectedCircles.map(circleId => ({
@@ -181,20 +205,28 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
       {/* Prompt Display */}
       <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
-        <div className="flex items-center space-x-3 mb-4">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
-            <span className="text-sm">✨</span>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
+              <span className="text-sm">✨</span>
+            </div>
+            <div>
+              <h3 className="font-brand text-sm font-medium text-sage-600">Today's Gratitude</h3>
+              <p className="font-brand text-xs text-sage-500">
+                {new Date().toLocaleDateString('en-US', { 
+                  weekday: 'long', 
+                  month: 'long', 
+                  day: 'numeric' 
+                })}
+              </p>
+            </div>
           </div>
-          <div>
-            <h3 className="font-brand text-sm font-medium text-sage-600">Today&apos;s Gratitude</h3>
-            <p className="font-brand text-xs text-sage-500">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-          </div>
+          
+          {/* Weekly Streak Ring */}
+          <WeeklyStreakRings 
+            ringsCompleted={weeklyStreak.rings_completed} 
+            size={40}
+          />
         </div>
         
         <p className="font-display text-xl text-sage-800 font-medium leading-relaxed">
