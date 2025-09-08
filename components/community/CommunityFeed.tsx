@@ -221,7 +221,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             <span className="text-lg">🤝</span>
           </div>
           <h3 className="font-display text-2xl font-semibold text-sage-800">
-            Community Feed
+            My Circles
           </h3>
         </div>
         
@@ -245,7 +245,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
           <span className="text-lg">🤝</span>
         </div>
         <h3 className="font-display text-2xl font-semibold text-sage-800">
-          Community Feed
+          My Circles
         </h3>
       </div>
 
