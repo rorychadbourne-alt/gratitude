@@ -7,6 +7,7 @@ import DailyPrompt from '../components/gratitude/DailyPrompt'
 import GratitudeHistory from '../components/gratitude/GratitudeHistory'
 import CommunityFeed from '../components/community/CommunityFeed'
 import OnboardingFlow from '../components/onboarding/OnboardingFlow'
+import WeeklyStreakRings from '../components/ui/WeeklyStreakRings'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
@@ -156,6 +157,31 @@ export default function Dashboard() {
             Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
           </p>
         </header>
+
+        {/* Streak Testing Section - Remove after testing */}
+        <div className="bg-white/80 backdrop-blur-sm rounded-xl p-6 mb-8 border border-white/50">
+          <h3 className="font-brand text-lg font-semibold text-gray-800 mb-4 text-center">
+            Weekly Streak Ring Testing
+          </h3>
+          <div className="flex justify-center space-x-8">
+            <div className="text-center">
+              <WeeklyStreakRings ringsCompleted={0} />
+              <p className="font-brand text-xs mt-2 text-gray-600">0 days</p>
+            </div>
+            <div className="text-center">
+              <WeeklyStreakRings ringsCompleted={2} />
+              <p className="font-brand text-xs mt-2 text-gray-600">2 days</p>
+            </div>
+            <div className="text-center">
+              <WeeklyStreakRings ringsCompleted={4} />
+              <p className="font-brand text-xs mt-2 text-gray-600">4 days</p>
+            </div>
+            <div className="text-center">
+              <WeeklyStreakRings ringsCompleted={5} />
+              <p className="font-brand text-xs mt-2 text-gray-600">5 days (complete)</p>
+            </div>
+          </div>
+        </div>
 
         <div className="space-y-12">
           <DailyPrompt user={user} onNewResponse={handleNewResponse} />
