@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import CommunityStreakSelector from './CommunityStreakSelector'
+import { getCurrentCommunityStreak, calculateCommunityParticipation } from '../../lib/communityStreakHelpers'
 
 interface CommunityFeedProps {
   user: any
@@ -90,21 +91,17 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             .select('*', { count: 'exact', head: true })
             .eq('circle_id', circle.id)
 
-          // Get today's active members (simplified for now - will need streak logic later)
-          const today = new Date().toISOString().split('T')[0]
-          const { data: todayResponses } = await supabase
-            .from('gratitude_responses')
-            .select('user_id')
-            .eq('created_at::date', today)
-            .in('user_id', await getCircleMemberIds(circle.id))
-
-          const uniqueActiveToday = new Set(todayResponses?.map(r => r.user_id) || [])
+          // Get real community streak data
+          const { data: streakData } = await getCurrentCommunityStreak(circle.id)
+          
+          // Get today's participation
+          const { activeMembers } = await calculateCommunityParticipation(circle.id)
 
           return {
             id: circle.id,
             name: circle.name,
-            ringsCompleted: Math.floor(Math.random() * 6), // TODO: Replace with actual streak calculation
-            todayActive: uniqueActiveToday.size,
+            ringsCompleted: streakData?.rings_completed || 0, // Real streak data
+            todayActive: activeMembers,
             totalMembers: totalMembers || 0,
             ring_color: circle.ring_color || 'periwinkle',
             center_emoji: circle.center_emoji || '🤝'
@@ -221,7 +218,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             <span className="text-lg">🤝</span>
           </div>
           <h3 className="font-display text-2xl font-semibold text-sage-800">
-            My Circles
+            Community Feed
           </h3>
         </div>
         
@@ -245,7 +242,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
           <span className="text-lg">🤝</span>
         </div>
         <h3 className="font-display text-2xl font-semibold text-sage-800">
-          My Circles
+          Community Feed
         </h3>
       </div>
 

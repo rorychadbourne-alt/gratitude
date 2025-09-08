@@ -1,7 +1,5 @@
 'use client'
 
-import { useState } from 'react'
-
 interface CommunityStreakRingsProps {
   ringsCompleted: number // 0-5
   todayActive: number
@@ -23,8 +21,6 @@ export default function CommunityStreakRings({
   className = "",
   isSelected = false
 }: CommunityStreakRingsProps) {
-  const [showTooltip, setShowTooltip] = useState(false)
-
   // Color mappings for different themes
   const colorThemes = {
     periwinkle: { stroke: '#4f46e5', fill: '#6366f1', bg: '#f4f3ff' },
@@ -45,13 +41,10 @@ export default function CommunityStreakRings({
   ]
 
   const center = size / 2
-  const participationRate = totalMembers > 0 ? todayActive / totalMembers : 0
 
   return (
     <div 
       className={`relative ${className}`}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
       style={{ width: size, height: size }}
     >
       <svg 
@@ -96,20 +89,22 @@ export default function CommunityStreakRings({
           )
         })}
         
-        {/* Center emoji - always show */}
-        <text
-          x={center}
-          y={center}
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="text-lg transform rotate-90 origin-center"
-          style={{ 
-            fontSize: ringsCompleted >= 5 ? '18px' : '14px',
-            animation: ringsCompleted >= 5 ? 'emojiCelebrate 0.8s ease-out' : 'none'
-          }}
-        >
-          {centerEmoji}
-        </text>
+        {/* Center emoji - only show when 5 rings completed */}
+        {ringsCompleted >= 5 && (
+          <text
+            x={center}
+            y={center}
+            textAnchor="middle"
+            dominantBaseline="central"
+            className="text-lg transform rotate-90 origin-center"
+            style={{ 
+              fontSize: '18px',
+              animation: 'emojiCelebrate 0.8s ease-out'
+            }}
+          >
+            {centerEmoji}
+          </text>
+        )}
       </svg>
 
       {/* Activity indicator */}
@@ -118,15 +113,6 @@ export default function CommunityStreakRings({
           <span className="text-xs font-brand font-bold text-white">
             {todayActive}
           </span>
-        </div>
-      )}
-
-      {/* Tooltip */}
-      {showTooltip && (
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-md whitespace-nowrap z-10">
-          This week: {ringsCompleted}/5 days<br/>
-          Today: {todayActive}/{totalMembers} active
-          <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-2 border-transparent border-t-gray-900"></div>
         </div>
       )}
 
