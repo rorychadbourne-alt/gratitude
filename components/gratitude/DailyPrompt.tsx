@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import MultiSelect from '../ui/MultiSelect'
 import WeeklyStreakRings from '../ui/WeeklyStreakRings'
 import { getCurrentWeekStreak, updateWeeklyStreak } from '../../lib/streakHelpers'
+import { updateCommunityStreak } from '../../lib/communityStreakHelpers'
 
 interface DailyPromptProps {
   user: any
@@ -139,12 +140,13 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
         if (responseError) throw responseError
 
-        // Update weekly streak for new responses only
+        // Update individual weekly streak for new responses only
         const { data: updatedStreak } = await updateWeeklyStreak(user.id)
         if (updatedStreak) {
           setWeeklyStreak(updatedStreak)
         }
 
+        // Handle circle sharing and community streak updates
         if (selectedCircles.length > 0) {
           const circleInserts = selectedCircles.map(circleId => ({
             response_id: responseData.id,
@@ -157,6 +159,16 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
           if (circlesError) {
             console.error('Error linking response to circles:', circlesError)
+          } else {
+            // Update community streak for each circle this response was shared with
+            try {
+              await Promise.all(
+                selectedCircles.map(circleId => updateCommunityStreak(circleId))
+              )
+            } catch (streakError) {
+              console.error('Error updating community streaks:', streakError)
+              // Don't fail the whole operation if streak update fails
+            }
           }
         }
         
@@ -207,7 +219,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
+            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today's Gratitude</h3>
             <p className="font-brand text-xs text-sage-500">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
