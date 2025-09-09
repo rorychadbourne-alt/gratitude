@@ -178,5 +178,5 @@ export default function JoinCircle({ user, onClose, onCircleJoined }: JoinCircle
       </h3>
       {formContent}
     </div>
-  )
+  ) 
 }
