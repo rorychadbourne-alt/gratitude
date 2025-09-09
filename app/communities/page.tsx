@@ -1,52 +1,60 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import CreateCircle from '../../components/community/CreateCircle'
 import JoinCircle from '../../components/community/JoinCircle'
+import CircleCustomization from '../../components/community/CircleCustomization'
 
 export default function Communities() {
   const [user, setUser] = useState<any>(null)
   const [circles, setCircles] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [showCreateModal, setShowCreateModal] = useState(false)
+  const [showJoinModal, setShowJoinModal] = useState(false)
+  const [customizingCircle, setCustomizingCircle] = useState<any>(null)
   const router = useRouter()
 
   useEffect(() => {
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (!session) {
+        router.push('/login')
+        return
+      }
+      setUser(session.user)
+      fetchUserCircles(session.user.id)
+    }
     getUser()
-    fetchUserCircles()
   }, [])
 
-  const getUser = async () => {
-    const { data: { session } } = await supabase.auth.getSession()
-    if (!session) {
-      router.push('/login')
-      return
-    }
-    setUser(session.user)
-  }
-
-  const fetchUserCircles = async () => {
+  const fetchUserCircles = async (userId: string) => {
     try {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
       const { data, error } = await supabase
         .from('circle_members')
         .select(`
+          role,
           circles (
             id,
             name,
-            invite_code,
+            description,
             created_by,
+            ring_color,
+            center_emoji,
             created_at
           )
         `)
-        .eq('user_id', session.user.id)
+        .eq('user_id', userId)
 
       if (error) throw error
-      const userCircles = data?.map(item => item.circles).filter(Boolean) || []
-      setCircles(userCircles)
+      
+      const circleData = data?.map(item => ({
+        ...item.circles,
+        role: item.role
+      })) || []
+      
+      setCircles(circleData)
     } catch (error) {
       console.error('Error fetching circles:', error)
     } finally {
@@ -54,98 +62,232 @@ export default function Communities() {
     }
   }
 
-  if (!user) return null
+  const handleSignOut = async () => {
+    try {
+      await supabase.auth.signOut()
+      router.push('/login')
+    } catch (error) {
+      console.error('Sign out error:', error)
+    }
+  }
+
+  const handleCircleCreated = () => {
+    setShowCreateModal(false)
+    if (user?.id) {
+      fetchUserCircles(user.id)
+    }
+  }
+
+  const handleCircleJoined = () => {
+    setShowJoinModal(false)
+    if (user?.id) {
+      fetchUserCircles(user.id)
+    }
+  }
+
+  const handleCustomizeCircle = (circle: any) => {
+    setCustomizingCircle(circle)
+  }
+
+  const handleCustomizationUpdate = (updatedCircle: any) => {
+    setCircles(circles.map(circle => 
+      circle.id === updatedCircle.id ? { ...circle, ...updatedCircle } : circle
+    ))
+    setCustomizingCircle(null)
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-morning-gradient flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-brand">Loading your circles...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-morning-gradient">
       {/* Navigation */}
-      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
+      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
                 <span className="text-white text-sm font-bold">G</span>
               </div>
               <h1 className="text-xl font-brand font-bold text-gray-900">
                 Gratitude Circle
               </h1>
             </div>
-            <button
-              onClick={() => router.push('/')}
-              className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
-            >
-              Back to Dashboard
-            </button>
+            <div className="flex items-center space-x-6">
+              <button
+                onClick={() => router.push('/')}
+                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => router.push('/profile')}
+                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+              >
+                Profile
+              </button>
+              <button
+                onClick={handleSignOut}
+                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
+              >
+                Sign Out
+              </button>
+            </div>
           </div>
         </div>
       </nav>
 
-      <div className="max-w-4xl mx-auto px-4 py-12">
-        <header className="text-center mb-12">
-          <h1 className="font-display text-4xl font-semibold text-sage-800 mb-4">
-            Your Communities
-          </h1>
-          <p className="font-brand text-sage-600 max-w-2xl mx-auto">
-            Create and join gratitude circles to share your journey with others
-          </p>
-        </header>
-
-        <div className="grid gap-8 lg:grid-cols-2 mb-12">
-          <CreateCircle user={user} onCircleCreated={fetchUserCircles} />
-          <JoinCircle user={user} onCircleJoined={fetchUserCircles} />
+      {/* Main Content */}
+      <div className="max-w-6xl mx-auto px-4 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <div>
+            <h1 className="font-display text-4xl font-semibold text-sage-800 mb-2">
+              My Circles
+            </h1>
+            <p className="text-gray-600 font-brand">
+              Create and manage your gratitude communities
+            </p>
+          </div>
+          
+          <div className="flex space-x-3">
+            <button
+              onClick={() => setShowJoinModal(true)}
+              className="bg-white text-periwinkle-600 border border-periwinkle-200 py-2 px-4 rounded-lg hover:bg-periwinkle-50 font-brand font-medium transition-colors"
+            >
+              Join Circle
+            </button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-2 px-4 rounded-lg hover:from-periwinkle-600 hover:to-periwinkle-700 font-brand font-medium transition-all shadow-md"
+            >
+              Create Circle
+            </button>
+          </div>
         </div>
 
-        {/* User's Circles */}
-        <div className="bg-white rounded-xl shadow-md border border-gray-100 p-8">
-          <h2 className="font-display text-2xl font-semibold text-sage-800 mb-6">
-            Your Circles
-          </h2>
-
-          {loading ? (
-            <div className="space-y-4">
-              {[1, 2].map((i) => (
-                <div key={i} className="animate-pulse bg-warm-100 rounded-lg p-4 h-24"></div>
-              ))}
+        {/* Circles Grid */}
+        {circles.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-periwinkle-100 to-warm-100 flex items-center justify-center mx-auto mb-4">
+              <span className="text-2xl">🤝</span>
             </div>
-          ) : circles.length === 0 ? (
-            <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-warm-200 to-gold-200 flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">🤝</span>
-              </div>
-              <p className="font-brand text-sage-600 mb-2">No circles yet</p>
-              <p className="font-brand text-sm text-sage-500">
-                Create your first circle or join one using an invite code
-              </p>
+            <h3 className="font-display text-xl font-medium text-sage-800 mb-2">
+              No circles yet
+            </h3>
+            <p className="text-gray-600 font-brand mb-6 max-w-sm mx-auto">
+              Create your first gratitude circle or join an existing one to start sharing with others.
+            </p>
+            <div className="flex justify-center space-x-3">
+              <button
+                onClick={() => setShowJoinModal(true)}
+                className="bg-white text-periwinkle-600 border border-periwinkle-200 py-2 px-4 rounded-lg hover:bg-periwinkle-50 font-brand font-medium transition-colors"
+              >
+                Join Circle
+              </button>
+              <button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-2 px-4 rounded-lg hover:from-periwinkle-600 hover:to-periwinkle-700 font-brand font-medium transition-all"
+              >
+                Create Circle
+              </button>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {circles.map((circle) => (
-                <div
-                  key={circle.id}
-                  className="border border-gray-200 rounded-xl p-6 hover:shadow-md transition-shadow duration-200"
-                >
-                  <div className="flex justify-between items-start">
+          </div>
+        ) : (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {circles.map((circle) => (
+              <div
+                key={circle.id}
+                className="bg-white rounded-xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div 
+                      className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                      style={{ 
+                        backgroundColor: circle.ring_color === 'gold' ? '#fefdfb' : 
+                                          circle.ring_color === 'sage' ? '#f8f9f6' :
+                                          circle.ring_color === 'peach' ? '#fef8f4' : '#f4f3ff'
+                      }}
+                    >
+                      {circle.center_emoji || '🤝'}
+                    </div>
                     <div>
-                      <h3 className="font-brand font-semibold text-sage-800 text-lg mb-2">
+                      <h3 className="font-display text-lg font-semibold text-sage-800">
                         {circle.name}
                       </h3>
-                      <p className="font-brand text-sm text-sage-500">
-                        Created {new Date(circle.created_at).toLocaleDateString()}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-brand text-xs text-sage-500 mb-1">Invite Code</p>
-                      <code className="bg-periwinkle-100 text-periwinkle-800 px-3 py-1 rounded-lg font-brand text-sm font-medium">
-                        {circle.invite_code}
-                      </code>
+                      <div className="flex items-center space-x-2">
+                        <span className={`text-xs px-2 py-1 rounded-full font-brand font-medium ${
+                          circle.role === 'creator' 
+                            ? 'bg-gold-100 text-gold-800' 
+                            : 'bg-periwinkle-100 text-periwinkle-800'
+                        }`}>
+                          {circle.role === 'creator' ? 'Creator' : 'Member'}
+                        </span>
+                      </div>
                     </div>
                   </div>
+                  
+                  {circle.created_by === user?.id && (
+                    <button
+                      onClick={() => handleCustomizeCircle(circle)}
+                      className="text-gray-400 hover:text-periwinkle-600 transition-colors p-1"
+                      title="Customize circle"
+                    >
+                      <span className="text-lg">⚙️</span>
+                    </button>
+                  )}
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                
+                <p className="text-gray-600 font-brand text-sm mb-4 line-clamp-2">
+                  {circle.description || 'A gratitude sharing circle'}
+                </p>
+                
+                <div className="text-xs text-gray-500 font-brand">
+                  Created {new Date(circle.created_at).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
+
+      {/* Modals */}
+      {showCreateModal && (
+        <CreateCircle
+          user={user}
+          onClose={() => setShowCreateModal(false)}
+          onCircleCreated={handleCircleCreated}
+        />
+      )}
+
+      {showJoinModal && (
+        <JoinCircle
+          user={user}
+          onClose={() => setShowJoinModal(false)}
+          onCircleJoined={handleCircleJoined}
+        />
+      )}
+
+      {customizingCircle && (
+        <CircleCustomization
+          circle={customizingCircle}
+          user={user}
+          onClose={() => setCustomizingCircle(null)}
+          onUpdate={handleCustomizationUpdate}
+        />
+      )}
     </div>
   )
 }
