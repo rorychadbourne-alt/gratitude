@@ -109,10 +109,10 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
           <div>
             <div className="text-center mb-8">
               <h2 className="font-display text-4xl font-semibold text-sage-800 mb-4">
-                Your First Gratitude Entry
+                Your Personal Commitment
               </h2>
               <p className="font-brand text-sage-600 text-lg">
-                Let&apos;s start with a special prompt to begin your journey
+                Create your personal gratitude pledge to strengthen your commitment
               </p>
             </div>
             <div className="max-w-3xl mx-auto">
@@ -243,66 +243,76 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
   )
 }
 
-// Special onboarding gratitude component
+// Special onboarding gratitude component with two-part commitment
 function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: () => void }) {
-  const [response, setResponse] = useState('')
+  const [step, setStep] = useState(1)
+  const [name, setName] = useState('')
+  const [gratitudeResponse, setGratitudeResponse] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleStepOne = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!response.trim()) return
+    if (!name.trim() || !gratitudeResponse.trim()) return
+    setStep(2)
+  }
 
-    console.log('Starting onboarding gratitude submission...')
+  const handleFinalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!name.trim() || !gratitudeResponse.trim()) return
+
     setSubmitting(true)
     try {
-      console.log('Getting today\'s prompt...')
+      // First, save the display name to the user's profile
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ display_name: name.trim() })
+        .eq('id', user.id)
+
+      if (profileError) throw profileError
+
+      // Get today's prompt or fallback
       const { data: todayPrompt, error: promptError } = await supabase
         .from('gratitude_prompts')
         .select('*')
         .eq('date', new Date().toISOString().split('T')[0])
         .single()
 
-      console.log('Today\'s prompt result:', { todayPrompt, promptError })
-
       let prompt = todayPrompt
       
       if (promptError || !prompt) {
-        console.log('No today prompt, getting any available prompt...')
         const { data: anyPrompt, error: anyError } = await supabase
           .from('gratitude_prompts')
           .select('*')
           .limit(1)
           .single()
         
-        console.log('Fallback prompt result:', { anyPrompt, anyError })
         if (anyError || !anyPrompt) {
           throw new Error('No prompts available')
         }
         prompt = anyPrompt
       }
 
-      console.log('Creating gratitude response...')
+      // Save the complete statement as their onboarding response
+      const fullStatement = `I, ${name.trim()}, am grateful I started this daily practice because ${gratitudeResponse.trim()}`
+
       const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
           user_id: user.id,
           prompt_id: prompt.id,
-          response_text: `I am grateful I started this daily practice because ${response.trim()}`,
+          response_text: fullStatement,
           is_onboarding_response: true
         })
         .select()
 
-      console.log('Response result:', { responseData, responseError })
       if (responseError) throw responseError
 
-      console.log('Success! Setting submitted state...')
       setSubmitted(true)
       
       setTimeout(() => {
-        console.log('Auto-advancing to next step...')
         onSubmit()
-      }, 1500)
+      }, 2000)
       
     } catch (error) {
       console.error('Error submitting onboarding response:', error)
@@ -318,38 +328,103 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
           <span className="text-2xl">✅</span>
         </div>
         <h3 className="font-display text-xl font-semibold text-sage-800 mb-3">
-          Beautiful! Your first gratitude has been saved.
+          Your commitment has been saved, {name}!
         </h3>
         <p className="font-brand text-sage-600">
-          You&apos;ve taken the first step in your gratitude journey.
+          You&apos;ve made a personal pledge to your gratitude practice.
         </p>
       </div>
     )
   }
 
+  if (step === 1) {
+    return (
+      <div className="bg-gradient-to-r from-periwinkle-50 to-warm-100 rounded-xl p-8 border border-periwinkle-200">
+        <h3 className="font-display text-xl font-semibold text-periwinkle-800 mb-6 text-center">
+          Let&apos;s create your personal gratitude commitment
+        </h3>
+        
+        <form onSubmit={handleStepOne} className="space-y-6">
+          <div>
+            <label className="block font-brand text-sm font-medium text-sage-700 mb-2">
+              Your name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your first name"
+              className="w-full px-4 py-3 border border-periwinkle-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent font-brand"
+              required
+              maxLength={50}
+            />
+          </div>
+
+          <div>
+            <div className="mb-4 p-4 bg-white/60 rounded-lg border border-periwinkle-100">
+              <p className="font-brand text-periwinkle-800">
+                <span className="font-medium">I, {name || '[Your Name]'}, am grateful I started this daily practice because </span>
+                <span className="text-periwinkle-600 italic">
+                  {gratitudeResponse || '[your reason will appear here...]'}
+                </span>
+              </p>
+            </div>
+            
+            <label className="block font-brand text-sm font-medium text-sage-700 mb-2">
+              Complete your commitment statement
+            </label>
+            <textarea
+              value={gratitudeResponse}
+              onChange={(e) => setGratitudeResponse(e.target.value)}
+              placeholder="Share why you're grateful for starting this journey..."
+              rows={4}
+              className="w-full px-4 py-3 border border-periwinkle-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand"
+              required
+            />
+          </div>
+          
+          <button
+            type="submit"
+            disabled={!name.trim() || !gratitudeResponse.trim()}
+            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-3 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 font-brand font-medium transition-all duration-200"
+          >
+            Review My Commitment
+          </button>
+        </form>
+      </div>
+    )
+  }
+
   return (
-    <div className="bg-gradient-to-r from-periwinkle-50 to-warm-100 rounded-xl p-8 border border-periwinkle-200">
-      <h3 className="font-display text-xl font-semibold text-periwinkle-800 mb-6 text-center">
-        I am grateful I started this daily practice because...
+    <div className="bg-gradient-to-r from-gold-50 to-peach-100 rounded-xl p-8 border border-gold-200">
+      <h3 className="font-display text-xl font-semibold text-gold-800 mb-6 text-center">
+        Your Personal Gratitude Commitment
       </h3>
       
-      <form onSubmit={handleSubmit}>
-        <textarea
-          value={response}
-          onChange={(e) => setResponse(e.target.value)}
-          placeholder="Share why you're grateful for starting this journey..."
-          rows={4}
-          className="w-full px-4 py-3 border border-periwinkle-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand"
-          required
-        />
-        
-        <button
-          type="submit"
-          disabled={submitting || !response.trim()}
-          className="mt-6 w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-3 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 font-brand font-medium transition-all duration-200"
-        >
-          {submitting ? 'Sharing...' : 'Share My First Gratitude'}
-        </button>
+      <div className="mb-6 p-6 bg-white rounded-lg border border-gold-300 shadow-sm">
+        <p className="font-brand text-lg text-sage-800 leading-relaxed">
+          <span className="font-semibold">I, {name}, am grateful I started this daily practice because </span>
+          {gratitudeResponse}
+        </p>
+      </div>
+
+      <form onSubmit={handleFinalSubmit}>
+        <div className="flex space-x-4">
+          <button
+            type="button"
+            onClick={() => setStep(1)}
+            className="flex-1 border border-gold-300 text-gold-700 py-3 px-6 rounded-xl hover:bg-gold-50 font-brand font-medium transition-all duration-200"
+          >
+            Edit
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex-1 bg-gradient-to-r from-gold-400 to-peach-400 text-white py-3 px-6 rounded-xl hover:from-gold-500 hover:to-peach-500 disabled:opacity-50 font-brand font-medium transition-all duration-200"
+          >
+            {submitting ? 'Saving...' : 'Make This Commitment'}
+          </button>
+        </div>
       </form>
     </div>
   )
