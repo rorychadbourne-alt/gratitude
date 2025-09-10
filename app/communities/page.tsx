@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import CreateCircle from '../../components/community/CreateCircle'
 import JoinCircle from '../../components/community/JoinCircle'
 import CircleCustomization from '../../components/community/CircleCustomization'
+import Navigation from '../../components/ui/Navigation'
 
 export default function Communities() {
   const [user, setUser] = useState<any>(null)
@@ -62,15 +63,6 @@ export default function Communities() {
     }
   }
 
-  const handleSignOut = async () => {
-    try {
-      await supabase.auth.signOut()
-      router.push('/login')
-    } catch (error) {
-      console.error('Sign out error:', error)
-    }
-  }
-
   const handleCircleCreated = () => {
     setShowCreateModal(false)
     if (user?.id) {
@@ -109,41 +101,8 @@ export default function Communities() {
 
   return (
     <div className="min-h-screen bg-morning-gradient">
-      {/* Navigation - Mobile Optimized */}
-      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-14 sm:h-16">
-            <div className="flex items-center space-x-2 sm:space-x-3">
-              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-                <span className="text-white text-xs sm:text-sm font-bold">G</span>
-              </div>
-              <h1 className="text-lg sm:text-xl font-brand font-bold text-gray-900">
-                Gratitude Circle
-              </h1>
-            </div>
-            <div className="flex items-center space-x-3 sm:space-x-6">
-              <button
-                onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
-              >
-                Dashboard
-              </button>
-              <button
-                onClick={() => router.push('/profile')}
-                className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
-              >
-                Profile
-              </button>
-              <button
-                onClick={handleSignOut}
-                className="bg-periwinkle-100 text-periwinkle-700 text-xs sm:text-sm font-medium font-brand py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Mobile-Optimized Navigation */}
+      <Navigation currentPage="communities" />
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
