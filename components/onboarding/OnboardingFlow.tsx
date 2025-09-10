@@ -243,27 +243,20 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
   )
 }
 
-// Special onboarding gratitude component with two-part commitment
+// Inline commitment prompt component
 function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: () => void }) {
-  const [step, setStep] = useState(1)
   const [name, setName] = useState('')
   const [gratitudeResponse, setGratitudeResponse] = useState('')
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  const handleStepOne = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!name.trim() || !gratitudeResponse.trim()) return
-    setStep(2)
-  }
-
-  const handleFinalSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!name.trim() || !gratitudeResponse.trim()) return
 
     setSubmitting(true)
     try {
-      // First, save the display name to the user's profile
+      // Save the display name to the user's profile
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ display_name: name.trim() })
@@ -293,7 +286,7 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
         prompt = anyPrompt
       }
 
-      // Save the complete statement as their onboarding response
+      // Save the complete statement
       const fullStatement = `I, ${name.trim()}, am grateful I started this daily practice because ${gratitudeResponse.trim()}`
 
       const { data: responseData, error: responseError } = await supabase
@@ -337,94 +330,45 @@ function OnboardingGratitudePrompt({ user, onSubmit }: { user: any, onSubmit: ()
     )
   }
 
-  if (step === 1) {
-    return (
-      <div className="bg-gradient-to-r from-periwinkle-50 to-warm-100 rounded-xl p-8 border border-periwinkle-200">
-        <h3 className="font-display text-xl font-semibold text-periwinkle-800 mb-6 text-center">
-          Let&apos;s create your personal gratitude commitment
-        </h3>
-        
-        <form onSubmit={handleStepOne} className="space-y-6">
-          <div>
-            <label className="block font-brand text-sm font-medium text-sage-700 mb-2">
-              Your name
-            </label>
+  return (
+    <div className="bg-gradient-to-r from-periwinkle-50 to-warm-100 rounded-xl p-8 border border-periwinkle-200">
+      <h3 className="font-display text-xl font-semibold text-periwinkle-800 mb-8 text-center">
+        Create your personal gratitude commitment
+      </h3>
+      
+      <form onSubmit={handleSubmit} className="space-y-8">
+        <div className="bg-white/60 rounded-lg p-6 border border-periwinkle-100">
+          <div className="text-lg leading-relaxed font-brand text-periwinkle-800">
+            <span className="mr-2">I,</span>
             <input
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Enter your first name"
-              className="w-full px-4 py-3 border border-periwinkle-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent font-brand"
+              placeholder="your name"
+              className="inline-block min-w-0 w-auto px-2 py-1 border-b-2 border-periwinkle-300 bg-transparent focus:border-periwinkle-500 focus:outline-none font-medium text-periwinkle-900 placeholder-periwinkle-500"
+              style={{ width: `${Math.max(name.length + 2, 10)}ch` }}
               required
               maxLength={50}
             />
-          </div>
-
-          <div>
-            <div className="mb-4 p-4 bg-white/60 rounded-lg border border-periwinkle-100">
-              <p className="font-brand text-periwinkle-800">
-                <span className="font-medium">I, {name || '[Your Name]'}, am grateful I started this daily practice because </span>
-                <span className="text-periwinkle-600 italic">
-                  {gratitudeResponse || '[your reason will appear here...]'}
-                </span>
-              </p>
-            </div>
-            
-            <label className="block font-brand text-sm font-medium text-sage-700 mb-2">
-              Complete your commitment statement
-            </label>
+            <span className="mx-2">, am grateful I started this daily practice because</span>
+            <br />
             <textarea
               value={gratitudeResponse}
               onChange={(e) => setGratitudeResponse(e.target.value)}
-              placeholder="Share why you're grateful for starting this journey..."
-              rows={4}
-              className="w-full px-4 py-3 border border-periwinkle-200 rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand"
+              placeholder="I want to cultivate a more positive mindset and appreciate life's blessings..."
+              className="mt-4 w-full min-h-[120px] px-3 py-2 border-2 border-periwinkle-200 rounded-lg bg-white/80 focus:border-periwinkle-500 focus:outline-none resize-none font-brand text-periwinkle-900 placeholder-periwinkle-500"
               required
             />
           </div>
-          
-          <button
-            type="submit"
-            disabled={!name.trim() || !gratitudeResponse.trim()}
-            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-3 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 font-brand font-medium transition-all duration-200"
-          >
-            Review My Commitment
-          </button>
-        </form>
-      </div>
-    )
-  }
-
-  return (
-    <div className="bg-gradient-to-r from-gold-50 to-peach-100 rounded-xl p-8 border border-gold-200">
-      <h3 className="font-display text-xl font-semibold text-gold-800 mb-6 text-center">
-        Your Personal Gratitude Commitment
-      </h3>
-      
-      <div className="mb-6 p-6 bg-white rounded-lg border border-gold-300 shadow-sm">
-        <p className="font-brand text-lg text-sage-800 leading-relaxed">
-          <span className="font-semibold">I, {name}, am grateful I started this daily practice because </span>
-          {gratitudeResponse}
-        </p>
-      </div>
-
-      <form onSubmit={handleFinalSubmit}>
-        <div className="flex space-x-4">
-          <button
-            type="button"
-            onClick={() => setStep(1)}
-            className="flex-1 border border-gold-300 text-gold-700 py-3 px-6 rounded-xl hover:bg-gold-50 font-brand font-medium transition-all duration-200"
-          >
-            Edit
-          </button>
-          <button
-            type="submit"
-            disabled={submitting}
-            className="flex-1 bg-gradient-to-r from-gold-400 to-peach-400 text-white py-3 px-6 rounded-xl hover:from-gold-500 hover:to-peach-500 disabled:opacity-50 font-brand font-medium transition-all duration-200"
-          >
-            {submitting ? 'Saving...' : 'Make This Commitment'}
-          </button>
         </div>
+        
+        <button
+          type="submit"
+          disabled={submitting || !name.trim() || !gratitudeResponse.trim()}
+          className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 font-brand font-medium transition-all duration-200 text-lg"
+        >
+          {submitting ? 'Making Your Commitment...' : 'Make This My Commitment'}
+        </button>
       </form>
     </div>
   )
