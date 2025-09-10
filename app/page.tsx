@@ -112,7 +112,7 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-morning-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-morning-gradient flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
           <p className="mt-4 text-gray-600 font-brand">Loading your gratitude space...</p>
@@ -136,34 +136,34 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-morning-gradient">
-      {/* Navigation */}
+      {/* Navigation - Mobile Optimized */}
       <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-                <span className="text-white text-sm font-bold">G</span>
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
+                <span className="text-white text-xs sm:text-sm font-bold">G</span>
               </div>
-              <h1 className="text-xl font-brand font-bold text-gray-900">
+              <h1 className="text-lg sm:text-xl font-brand font-bold text-gray-900">
                 Gratitude Circle
               </h1>
             </div>
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3 sm:space-x-6">
               <button
                 onClick={() => router.push('/communities')}
-                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
               >
                 Communities
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
+                className="bg-periwinkle-100 text-periwinkle-700 text-xs sm:text-sm font-medium font-brand py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
               >
                 Sign Out
               </button>
@@ -173,20 +173,20 @@ export default function Dashboard() {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        {/* Smart Contextual Header */}
-        <header className="mb-12 text-center">
-          <div className="flex items-center justify-center space-x-8 mb-6">
-            <div className="text-center">
-              <h1 className="font-display text-4xl font-semibold text-sage-800 mb-2 leading-tight">
+      <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        {/* Smart Contextual Header - Mobile Optimized */}
+        <header className="mb-8 sm:mb-12">
+          <div className="flex flex-col items-center space-y-6 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-8">
+            <div className="text-center sm:text-left">
+              <h1 className="font-display text-3xl sm:text-4xl font-semibold text-sage-800 mb-3 leading-tight">
                 {timeGreeting}, {userName}
               </h1>
-              <p className="font-brand text-lg text-sage-600 max-w-md leading-relaxed">
+              <p className="font-brand text-base sm:text-lg text-sage-600 max-w-sm mx-auto sm:mx-0 sm:max-w-md leading-relaxed px-4 sm:px-0">
                 {contextualMessage}
               </p>
             </div>
             
-            {/* Prominent Weekly Streak */}
+            {/* Weekly Streak - Mobile Optimized */}
             <div className="flex-shrink-0">
               <WeeklyStreakRings 
                 ringsCompleted={weeklyStreak.rings_completed} 
@@ -196,9 +196,9 @@ export default function Dashboard() {
           </div>
         </header>
 
-        <div className="space-y-12">
+        <div className="space-y-8 sm:space-y-12">
           <DailyPrompt user={user} onNewResponse={handleNewResponse} />
-          <div className="grid gap-12 lg:grid-cols-2">
+          <div className="grid gap-8 sm:gap-12 lg:grid-cols-2">
             <GratitudeHistory user={user} refreshTrigger={refreshTrigger} />
             <CommunityFeed user={user} />
           </div>
