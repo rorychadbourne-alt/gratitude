@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import MultiSelect from '../ui/MultiSelect'
-import WeeklyStreakRings from '../ui/WeeklyStreakRings'
-import { getCurrentWeekStreak, updateWeeklyStreak } from '../../lib/streakHelpers'
+import { updateWeeklyStreak } from '../../lib/streakHelpers'
 import { updateCommunityStreak } from '../../lib/communityStreakHelpers'
 
 interface DailyPromptProps {
@@ -21,26 +20,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [selectedCircles, setSelectedCircles] = useState<string[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
-  const [weeklyStreak, setWeeklyStreak] = useState({ rings_completed: 0 })
 
   useEffect(() => {
     fetchTodaysPrompt()
     fetchUserCircles()
-    fetchWeeklyStreak()
   }, [user?.id])
-
-  const fetchWeeklyStreak = async () => {
-    if (!user?.id) return
-
-    try {
-      const { data } = await getCurrentWeekStreak(user.id)
-      if (data) {
-        setWeeklyStreak(data)
-      }
-    } catch (error) {
-      console.error('Error fetching weekly streak:', error)
-    }
-  }
 
   const fetchTodaysPrompt = async () => {
     if (!user?.id) return
@@ -141,10 +125,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         if (responseError) throw responseError
 
         // Update individual weekly streak for new responses only
-        const { data: updatedStreak } = await updateWeeklyStreak(user.id)
-        if (updatedStreak) {
-          setWeeklyStreak(updatedStreak)
-        }
+        await updateWeeklyStreak(user.id)
 
         // Handle circle sharing and community streak updates
         if (selectedCircles.length > 0) {
@@ -217,23 +198,15 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
       {/* Prompt Display */}
       <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex-1">
-            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
-            <p className="font-brand text-xs text-sage-500">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-          </div>
-          
-          {/* Weekly Streak Ring */}
-          <WeeklyStreakRings 
-            ringsCompleted={weeklyStreak.rings_completed} 
-            size={60}
-          />
+        <div className="mb-4">
+          <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today's Gratitude</h3>
+          <p className="font-brand text-xs text-sage-500">
+            {new Date().toLocaleDateString('en-US', { 
+              weekday: 'long', 
+              month: 'long', 
+              day: 'numeric' 
+            })}
+          </p>
         </div>
         
         <p className="font-display text-xl text-sage-800 font-medium leading-relaxed">

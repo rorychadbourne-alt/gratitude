@@ -7,12 +7,16 @@ import DailyPrompt from '../components/gratitude/DailyPrompt'
 import GratitudeHistory from '../components/gratitude/GratitudeHistory'
 import CommunityFeed from '../components/community/CommunityFeed'
 import OnboardingFlow from '../components/onboarding/OnboardingFlow'
+import WeeklyStreakRings from '../components/ui/WeeklyStreakRings'
+import { getCurrentWeekStreak } from '../lib/streakHelpers'
+import { getTimeGreeting, getUserJourneyStage, getContextualMessage } from '../lib/heroHelpers'
 
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [weeklyStreak, setWeeklyStreak] = useState({ rings_completed: 0 })
   const router = useRouter()
 
   useEffect(() => {
@@ -38,6 +42,15 @@ export default function Dashboard() {
           .single()
 
         setProfile(profileData)
+
+        // Fetch user's weekly streak
+        if (profileData?.onboarding_completed) {
+          const { data: streakData } = await getCurrentWeekStreak(session.user.id)
+          if (streakData) {
+            setWeeklyStreak(streakData)
+          }
+        }
+
         setLoading(false)
       } catch (error) {
         console.error('Error getting session:', error)
@@ -64,8 +77,16 @@ export default function Dashboard() {
     }
   }, [])
 
-  const handleNewResponse = () => {
+  const handleNewResponse = async () => {
     setRefreshTrigger(prev => prev + 1)
+    
+    // Refresh streak data after new response
+    if (user?.id) {
+      const { data: streakData } = await getCurrentWeekStreak(user.id)
+      if (streakData) {
+        setWeeklyStreak(streakData)
+      }
+    }
   }
 
   const handleOnboardingComplete = () => {
@@ -108,6 +129,11 @@ export default function Dashboard() {
     return <OnboardingFlow user={user} onComplete={handleOnboardingComplete} />
   }
 
+  const userName = profile?.display_name || user.email?.split('@')[0] || 'there'
+  const journeyStage = getUserJourneyStage(profile)
+  const timeGreeting = getTimeGreeting()
+  const contextualMessage = getContextualMessage(journeyStage, weeklyStreak.rings_completed)
+
   return (
     <div className="min-h-screen bg-morning-gradient">
       {/* Navigation */}
@@ -148,13 +174,26 @@ export default function Dashboard() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-8">
+        {/* Smart Contextual Header */}
         <header className="mb-12 text-center">
-          <h1 className="font-display text-5xl font-semibold text-sage-800 mb-4 leading-tight">
-            Good morning, {user.email?.split('@')[0]}
-          </h1>
-          <p className="text-gray-600 font-brand text-lg max-w-2xl mx-auto leading-relaxed">
-            Take a moment to reflect and share your gratitude. Today is a new opportunity to notice the beauty around you.
-          </p>
+          <div className="flex items-center justify-center space-x-8 mb-6">
+            <div className="text-center">
+              <h1 className="font-display text-4xl font-semibold text-sage-800 mb-2 leading-tight">
+                {timeGreeting}, {userName}
+              </h1>
+              <p className="font-brand text-lg text-sage-600 max-w-md leading-relaxed">
+                {contextualMessage}
+              </p>
+            </div>
+            
+            {/* Prominent Weekly Streak */}
+            <div className="flex-shrink-0">
+              <WeeklyStreakRings 
+                ringsCompleted={weeklyStreak.rings_completed} 
+                size={80}
+              />
+            </div>
+          </div>
         </header>
 
         <div className="space-y-12">
