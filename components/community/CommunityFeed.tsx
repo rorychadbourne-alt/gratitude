@@ -167,12 +167,15 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
       const { data: communityResponses, error: responsesError } = await supabase
         .from('gratitude_responses')
         .select(`
-          *,
-          gratitude_prompts (
-            prompt,
-            date
-          )
-        `)
+        *,
+        gratitude_prompts (
+          prompt,
+          date
+        ),
+        profiles!inner (
+          display_name
+        )
+      `)
         .in('id', responseIds)
         .order('created_at', { ascending: false })
         .limit(10)
