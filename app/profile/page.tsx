@@ -48,10 +48,10 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-morning-gradient flex items-center justify-center px-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading profile...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-brand">Loading profile...</p>
         </div>
       </div>
     )
@@ -62,22 +62,22 @@ export default function ProfilePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation */}
+    <div className="min-h-screen bg-morning-gradient">
+      {/* Navigation - Mobile Optimized */}
       <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center">
-                <span className="text-white text-sm font-bold">G</span>
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
+                <span className="text-white text-xs sm:text-sm font-bold">G</span>
               </div>
-              <h1 className="text-xl font-brand font-bold text-gray-900">
+              <h1 className="text-lg sm:text-xl font-brand font-bold text-gray-900">
                 Gratitude Circle
               </h1>
             </div>
             <button
               onClick={() => router.push('/')}
-              className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+              className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
             >
               Back to Dashboard
             </button>
@@ -85,7 +85,7 @@ export default function ProfilePage() {
         </div>
       </nav>
 
-      <div className="container mx-auto px-4">
+      <div className="px-4 py-6 sm:py-8">
         <UserProfile user={user} profile={profile} />
       </div>
     </div>

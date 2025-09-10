@@ -98,7 +98,7 @@ export default function Communities() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-morning-gradient flex items-center justify-center">
+      <div className="min-h-screen bg-morning-gradient flex items-center justify-center px-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-periwinkle-500 mx-auto"></div>
           <p className="mt-4 text-gray-600 font-brand">Loading your circles...</p>
@@ -109,34 +109,34 @@ export default function Communities() {
 
   return (
     <div className="min-h-screen bg-morning-gradient">
-      {/* Navigation */}
+      {/* Navigation - Mobile Optimized */}
       <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-                <span className="text-white text-sm font-bold">G</span>
+          <div className="flex justify-between items-center h-14 sm:h-16">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
+                <span className="text-white text-xs sm:text-sm font-bold">G</span>
               </div>
-              <h1 className="text-xl font-brand font-bold text-gray-900">
+              <h1 className="text-lg sm:text-xl font-brand font-bold text-gray-900">
                 Gratitude Circle
               </h1>
             </div>
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center space-x-3 sm:space-x-6">
               <button
                 onClick={() => router.push('/')}
-                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
               >
                 Dashboard
               </button>
               <button
                 onClick={() => router.push('/profile')}
-                className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                className="text-gray-600 hover:text-periwinkle-600 text-xs sm:text-sm font-medium font-brand px-2 sm:px-3 py-2 rounded-md transition-colors"
               >
                 Profile
               </button>
               <button
                 onClick={handleSignOut}
-                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
+                className="bg-periwinkle-100 text-periwinkle-700 text-xs sm:text-sm font-medium font-brand py-1.5 sm:py-2 px-3 sm:px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
               >
                 Sign Out
               </button>
@@ -146,71 +146,73 @@ export default function Communities() {
       </nav>
 
       {/* Main Content */}
-      <div className="max-w-6xl mx-auto px-4 py-8">
-        <div className="flex justify-between items-center mb-8">
+      <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8">
+        {/* Header - Mobile Optimized */}
+        <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 mb-6 sm:mb-8">
           <div>
-            <h1 className="font-display text-4xl font-semibold text-sage-800 mb-2">
+            <h1 className="font-display text-3xl sm:text-4xl font-semibold text-sage-800 mb-2">
               My Circles
             </h1>
-            <p className="text-gray-600 font-brand">
+            <p className="text-gray-600 font-brand text-sm sm:text-base">
               Create and manage your gratitude communities
             </p>
           </div>
           
-          <div className="flex space-x-3">
+          {/* Action Buttons - Mobile Stack */}
+          <div className="flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-3">
             <button
               onClick={() => setShowJoinModal(true)}
-              className="bg-white text-periwinkle-600 border border-periwinkle-200 py-2 px-4 rounded-lg hover:bg-periwinkle-50 font-brand font-medium transition-colors"
+              className="w-full sm:w-auto bg-white text-periwinkle-600 border border-periwinkle-200 py-3 px-4 rounded-lg hover:bg-periwinkle-50 font-brand font-medium transition-colors text-center min-h-[48px]"
             >
               Join Circle
             </button>
             <button
               onClick={() => setShowCreateModal(true)}
-              className="bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-2 px-4 rounded-lg hover:from-periwinkle-600 hover:to-periwinkle-700 font-brand font-medium transition-all shadow-md"
+              className="w-full sm:w-auto bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-3 px-4 rounded-lg hover:from-periwinkle-600 hover:to-periwinkle-700 font-brand font-medium transition-all shadow-md min-h-[48px]"
             >
               Create Circle
             </button>
           </div>
         </div>
 
-        {/* Circles Grid */}
+        {/* Circles Grid - Mobile Optimized */}
         {circles.length === 0 ? (
-          <div className="text-center py-16">
+          <div className="text-center py-12 sm:py-16">
             <div className="w-16 h-16 rounded-full bg-gradient-to-br from-periwinkle-100 to-warm-100 flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">🤝</span>
             </div>
             <h3 className="font-display text-xl font-medium text-sage-800 mb-2">
               No circles yet
             </h3>
-            <p className="text-gray-600 font-brand mb-6 max-w-sm mx-auto">
+            <p className="text-gray-600 font-brand mb-6 max-w-sm mx-auto px-4 sm:px-0 text-sm sm:text-base">
               Create your first gratitude circle or join an existing one to start sharing with others.
             </p>
-            <div className="flex justify-center space-x-3">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:justify-center sm:space-y-0 sm:space-x-3 max-w-sm mx-auto">
               <button
                 onClick={() => setShowJoinModal(true)}
-                className="bg-white text-periwinkle-600 border border-periwinkle-200 py-2 px-4 rounded-lg hover:bg-periwinkle-50 font-brand font-medium transition-colors"
+                className="bg-white text-periwinkle-600 border border-periwinkle-200 py-3 px-4 rounded-lg hover:bg-periwinkle-50 font-brand font-medium transition-colors min-h-[48px]"
               >
                 Join Circle
               </button>
               <button
                 onClick={() => setShowCreateModal(true)}
-                className="bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-2 px-4 rounded-lg hover:from-periwinkle-600 hover:to-periwinkle-700 font-brand font-medium transition-all"
+                className="bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-3 px-4 rounded-lg hover:from-periwinkle-600 hover:to-periwinkle-700 font-brand font-medium transition-all min-h-[48px]"
               >
                 Create Circle
               </button>
             </div>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {circles.map((circle) => (
               <div
                 key={circle.id}
-                className="bg-white rounded-xl shadow-md border border-gray-100 p-6 hover:shadow-lg transition-shadow"
+                className="bg-white rounded-xl shadow-md border border-gray-100 p-4 sm:p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-3 flex-1 min-w-0">
                     <div 
-                      className="w-10 h-10 rounded-full flex items-center justify-center text-lg"
+                      className="w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-lg flex-shrink-0"
                       style={{ 
                         backgroundColor: circle.ring_color === 'gold' ? '#fefdfb' : 
                                           circle.ring_color === 'sage' ? '#f8f9f6' :
@@ -219,11 +221,11 @@ export default function Communities() {
                     >
                       {circle.center_emoji || '🤝'}
                     </div>
-                    <div>
-                      <h3 className="font-display text-lg font-semibold text-sage-800">
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-display text-base sm:text-lg font-semibold text-sage-800 truncate">
                         {circle.name}
                       </h3>
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-2 mt-1">
                         <span className={`text-xs px-2 py-1 rounded-full font-brand font-medium ${
                           circle.role === 'creator' 
                             ? 'bg-gold-100 text-gold-800' 
@@ -238,7 +240,7 @@ export default function Communities() {
                   {circle.created_by === user?.id && (
                     <button
                       onClick={() => handleCustomizeCircle(circle)}
-                      className="text-gray-400 hover:text-periwinkle-600 transition-colors p-1"
+                      className="text-gray-400 hover:text-periwinkle-600 transition-colors p-2 -m-2 min-h-[44px] min-w-[44px] flex items-center justify-center"
                       title="Customize circle"
                     >
                       <span className="text-lg">⚙️</span>
