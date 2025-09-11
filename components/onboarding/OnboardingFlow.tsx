@@ -141,7 +141,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
               </p>
             </div>
             <div className="max-w-md mx-auto">
-              <JoinCircle user={user} onCircleJoined={handleNext} />
+              <JoinCircle user={user} onClose={() => handleSkip()} onCircleJoined={handleNext} />
             </div>
             <div className="text-center mt-6 space-x-6">
               <button
@@ -172,7 +172,7 @@ export default function OnboardingFlow({ user, onComplete }: OnboardingFlowProps
               </p>
             </div>
             <div className="max-w-md mx-auto">
-              <CreateCircle user={user} onCircleCreated={handleNext} />
+              <CreateCircle user={user} onClose={() => handleSkip()} onCircleCreated={handleNext} />
             </div>
             <div className="text-center mt-6">
               <button
