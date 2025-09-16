@@ -3,8 +3,10 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import MultiSelect from '../ui/MultiSelect'
+import CircleSelector from '../ui/CircleSelector'
 import { updateWeeklyStreak } from '../../lib/streakHelpers'
 import { updateCommunityStreak } from '../../lib/communityStreakHelpers'
+import { useRouter } from 'next/navigation'
 
 interface DailyPromptProps {
   user: any
@@ -20,6 +22,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [selectedCircles, setSelectedCircles] = useState<string[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
+  const [useNewSelector, setUseNewSelector] = useState(true) // Toggle for testing
+  const router = useRouter()
 
   useEffect(() => {
     fetchTodaysPrompt()
@@ -78,7 +82,18 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       if (error) throw error
 
       const circles = data?.map(item => item.circles).filter(Boolean) || []
-      setUserCircles(circles)
+      
+      // Transform for CircleSelector format with mock data
+      const transformedCircles = circles.map((circle: any, index: number) => ({
+        id: circle.id,
+        name: circle.name,
+        memberCount: Math.floor(Math.random() * 10) + 3, // Mock - replace with real query
+        streak: Math.floor(Math.random() * 20) + 1, // Mock - replace with real calculation
+        sharedToday: Math.floor(Math.random() * 5), // Mock - replace with real query
+        color: ['orange', 'blue', 'purple', 'green', 'pink'][index % 5]
+      }))
+      
+      setUserCircles(transformedCircles)
     } catch (error) {
       console.error('Error fetching user circles:', error)
     }
@@ -173,6 +188,10 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     }
   }
 
+  const handleCreateCircle = () => {
+    router.push('/communities/create')
+  }
+
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8 animate-pulse">
@@ -225,6 +244,20 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         </div>
       )}
 
+      {/* Testing Toggle - Remove this in production */}
+      <div className="mb-6 flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
+        <span className="text-sm font-medium text-blue-800">
+          {useNewSelector ? 'Using New Circle Selector' : 'Using Original MultiSelect'}
+        </span>
+        <button
+          type="button"
+          onClick={() => setUseNewSelector(!useNewSelector)}
+          className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
+        >
+          Switch
+        </button>
+      </div>
+
       {/* Form */}
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
@@ -247,21 +280,41 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           />
         </div>
 
+        {/* Circle Selection - Toggle between old and new */}
         {userCircles.length > 0 && (
           <div>
-            <label className="block font-brand text-sm font-medium text-sage-700 mb-3">
-              Share with circles (optional)
-            </label>
-            <MultiSelect
-              options={userCircles.map(circle => ({ id: circle.id, name: circle.name }))}
-              selected={selectedCircles}
-              onChange={setSelectedCircles}
-              placeholder="Choose circles to share with..."
-            />
-            <p className="font-brand text-xs text-sage-500 mt-2">
-              Your response will be visible to members of selected circles. Leave empty to keep private.
-            </p>
+            {useNewSelector ? (
+              <CircleSelector 
+                userCircles={userCircles}
+                onSelectionChange={setSelectedCircles}
+                onCreateCircle={handleCreateCircle}
+              />
+            ) : (
+              <>
+                <label className="block font-brand text-sm font-medium text-sage-700 mb-3">
+                  Share with circles (optional)
+                </label>
+                <MultiSelect
+                  options={userCircles.map(circle => ({ id: circle.id, name: circle.name }))}
+                  selected={selectedCircles}
+                  onChange={setSelectedCircles}
+                  placeholder="Choose circles to share with..."
+                />
+                <p className="font-brand text-xs text-sage-500 mt-2">
+                  Your response will be visible to members of selected circles. Leave empty to keep private.
+                </p>
+              </>
+            )}
           </div>
+        )}
+
+        {/* Show CircleSelector even when user has no circles */}
+        {userCircles.length === 0 && useNewSelector && (
+          <CircleSelector 
+            userCircles={[]}
+            onSelectionChange={setSelectedCircles}
+            onCreateCircle={handleCreateCircle}
+          />
         )}
 
         <button
