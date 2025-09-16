@@ -3,10 +3,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
 import MultiSelect from '../ui/MultiSelect'
-import CircleSelector from '../ui/CircleSelector'
+import ShareModal from '../ui/ShareModal'
 import { updateWeeklyStreak } from '../../lib/streakHelpers'
 import { updateCommunityStreak } from '../../lib/communityStreakHelpers'
-import { useRouter } from 'next/navigation'
 
 interface DailyPromptProps {
   user: any
@@ -22,8 +21,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [selectedCircles, setSelectedCircles] = useState<string[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
-  const [useNewSelector, setUseNewSelector] = useState(true) // Toggle for testing
-  const router = useRouter()
+  const [showShareModal, setShowShareModal] = useState(false)
+  const [useModalFlow, setUseModalFlow] = useState(true) // Toggle for testing
 
   useEffect(() => {
     fetchTodaysPrompt()
@@ -83,7 +82,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       const circles = data?.map(item => item.circles).filter(Boolean) || []
       
-      // Transform for CircleSelector format with mock data
+      // Transform for modal format with mock data
       const transformedCircles = circles.map((circle: any, index: number) => ({
         id: circle.id,
         name: circle.name,
@@ -99,8 +98,85 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmitClick = (e: React.FormEvent) => {
     e.preventDefault()
+    if (!response.trim() || response.length > 1000) return
+
+    if (useModalFlow && !existingResponse) {
+      // Show modal for new responses
+      setShowShareModal(true)
+    } else {
+      // Direct submit for updates or when not using modal
+      handleDirectSubmit()
+    }
+  }
+
+  const handleShare = async (selectedCircleIds: string[], responseText: string) => {
+    setSelectedCircles(selectedCircleIds)
+    setSubmitting(true)
+    setMessage(null)
+
+    try {
+      // Create the gratitude response
+      const { data: responseData, error: responseError } = await supabase
+        .from('gratitude_responses')
+        .insert({
+          user_id: user.id,
+          prompt_id: prompt.id,
+          response_text: responseText.trim(),
+          is_onboarding_response: false
+        })
+        .select()
+        .single()
+
+      if (responseError) throw responseError
+
+      // Update individual weekly streak
+      await updateWeeklyStreak(user.id)
+
+      // Handle circle sharing and community streak updates
+      if (selectedCircleIds.length > 0) {
+        const circleInserts = selectedCircleIds.map(circleId => ({
+          response_id: responseData.id,
+          circle_id: circleId
+        }))
+
+        const { error: circlesError } = await supabase
+          .from('response_circles')
+          .insert(circleInserts)
+
+        if (circlesError) {
+          console.error('Error linking response to circles:', circlesError)
+        } else {
+          try {
+            await Promise.all(
+              selectedCircleIds.map(circleId => updateCommunityStreak(circleId))
+            )
+          } catch (streakError) {
+            console.error('Error updating community streaks:', streakError)
+          }
+        }
+      }
+      
+      setExistingResponse(responseData)
+      setMessage('Thank you for sharing your gratitude!')
+      setShowShareModal(false)
+      
+      if (onNewResponse) {
+        onNewResponse()
+      }
+      
+      setTimeout(() => setMessage(null), 3000)
+      
+    } catch (error: any) {
+      console.error('Submit error:', error)
+      setMessage(`Error: ${error.message}`)
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  const handleDirectSubmit = async () => {
     if (!response.trim() || !prompt || !user?.id) return
 
     if (response.trim().length > 1000) {
@@ -125,7 +201,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         setExistingResponse(data)
         setMessage('Your response has been updated!')
       } else {
-        // Create the gratitude response
+        // For non-modal flow, create response with selected circles
         const { data: responseData, error: responseError } = await supabase
           .from('gratitude_responses')
           .insert({
@@ -139,10 +215,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
         if (responseError) throw responseError
 
-        // Update individual weekly streak for new responses only
         await updateWeeklyStreak(user.id)
 
-        // Handle circle sharing and community streak updates
         if (selectedCircles.length > 0) {
           const circleInserts = selectedCircles.map(circleId => ({
             response_id: responseData.id,
@@ -156,14 +230,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           if (circlesError) {
             console.error('Error linking response to circles:', circlesError)
           } else {
-            // Update community streak for each circle this response was shared with
             try {
               await Promise.all(
                 selectedCircles.map(circleId => updateCommunityStreak(circleId))
               )
             } catch (streakError) {
               console.error('Error updating community streaks:', streakError)
-              // Don't fail the whole operation if streak update fails
             }
           }
         }
@@ -188,10 +260,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     }
   }
 
-  const handleCreateCircle = () => {
-    router.push('/communities/create')
-  }
-
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8 animate-pulse">
@@ -214,126 +282,121 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   }
 
   return (
-    <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
-      {/* Prompt Display */}
-      <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
-        <div className="mb-4">
-          <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
-          <p className="font-brand text-xs text-sage-500">
-            {new Date().toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              month: 'long', 
-              day: 'numeric' 
-            })}
+    <>
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
+        {/* Prompt Display */}
+        <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
+          <div className="mb-4">
+            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
+            <p className="font-brand text-xs text-sage-500">
+              {new Date().toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                month: 'long', 
+                day: 'numeric' 
+              })}
+            </p>
+          </div>
+          
+          <p className="font-display text-xl text-sage-800 font-medium leading-relaxed">
+            {prompt.prompt}
           </p>
         </div>
-        
-        <p className="font-display text-xl text-sage-800 font-medium leading-relaxed">
-          {prompt.prompt}
-        </p>
-      </div>
 
-      {/* Success Message */}
-      {message && (
-        <div className={`p-4 rounded-xl mb-6 font-brand font-medium text-center ${
-          message.includes('Error') || message.includes('must be') 
-            ? 'bg-red-50 text-red-700 border border-red-200'
-            : 'bg-green-50 text-green-700 border border-green-200'
-        }`}>
-          {message}
-        </div>
-      )}
-
-      {/* Testing Toggle - Remove this in production */}
-      <div className="mb-6 flex items-center justify-between bg-blue-50 p-3 rounded-lg border border-blue-200">
-        <span className="text-sm font-medium text-blue-800">
-          {useNewSelector ? 'Using New Circle Selector' : 'Using Original MultiSelect'}
-        </span>
-        <button
-          type="button"
-          onClick={() => setUseNewSelector(!useNewSelector)}
-          className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded transition-colors"
-        >
-          Switch
-        </button>
-      </div>
-
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div>
-          <div className="flex justify-between items-center mb-3">
-            <label className="font-brand text-sm font-medium text-sage-700">
-              Share your thoughts
-            </label>
-            <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
-              {response.length}/1000
-            </span>
+        {/* Success Message */}
+        {message && (
+          <div className={`p-4 rounded-xl mb-6 font-brand font-medium text-center ${
+            message.includes('Error') || message.includes('must be') 
+              ? 'bg-red-50 text-red-700 border border-red-200'
+              : 'bg-green-50 text-green-700 border border-green-200'
+          }`}>
+            {message}
           </div>
-          <textarea
-            value={response}
-            onChange={(e) => setResponse(e.target.value)}
-            placeholder="Share your response..."
-            required
-            rows={5}
-            maxLength={1000}
-            className="w-full px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm"
-          />
+        )}
+
+        {/* Testing Toggle - Remove this in production */}
+        <div className="mb-6 flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-200">
+          <span className="text-sm font-medium text-purple-800">
+            {useModalFlow ? 'Using Instagram-style Modal' : 'Using Original Inline Selection'}
+          </span>
+          <button
+            type="button"
+            onClick={() => setUseModalFlow(!useModalFlow)}
+            className="px-3 py-1 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded transition-colors"
+          >
+            Switch
+          </button>
         </div>
 
-        {/* Circle Selection - Toggle between old and new */}
-        {userCircles.length > 0 && (
+        {/* Form */}
+        <form onSubmit={handleSubmitClick} className="space-y-6">
           <div>
-            {useNewSelector ? (
-              <CircleSelector 
-                userCircles={userCircles}
-                onSelectionChange={setSelectedCircles}
-                onCreateCircle={handleCreateCircle}
-              />
-            ) : (
-              <>
-                <label className="block font-brand text-sm font-medium text-sage-700 mb-3">
-                  Share with circles (optional)
-                </label>
-                <MultiSelect
-                  options={userCircles.map(circle => ({ id: circle.id, name: circle.name }))}
-                  selected={selectedCircles}
-                  onChange={setSelectedCircles}
-                  placeholder="Choose circles to share with..."
-                />
-                <p className="font-brand text-xs text-sage-500 mt-2">
-                  Your response will be visible to members of selected circles. Leave empty to keep private.
-                </p>
-              </>
-            )}
+            <div className="flex justify-between items-center mb-3">
+              <label className="font-brand text-sm font-medium text-sage-700">
+                Share your thoughts
+              </label>
+              <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
+                {response.length}/1000
+              </span>
+            </div>
+            <textarea
+              value={response}
+              onChange={(e) => setResponse(e.target.value)}
+              placeholder="Share your response..."
+              required
+              rows={5}
+              maxLength={1000}
+              className="w-full px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm"
+            />
           </div>
-        )}
 
-        {/* Show CircleSelector even when user has no circles */}
-        {userCircles.length === 0 && useNewSelector && (
-          <CircleSelector 
-            userCircles={[]}
-            onSelectionChange={setSelectedCircles}
-            onCreateCircle={handleCreateCircle}
-          />
-        )}
-
-        <button
-          type="submit"
-          disabled={submitting || !response.trim() || response.length > 1000}
-          className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-        >
-          {submitting ? (
-            <span className="flex items-center justify-center space-x-2">
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-              <span>Sharing...</span>
-            </span>
-          ) : existingResponse ? (
-            'Update Response'
-          ) : (
-            'Share Gratitude'
+          {/* Show original MultiSelect when not using modal flow */}
+          {!useModalFlow && userCircles.length > 0 && (
+            <div>
+              <label className="block font-brand text-sm font-medium text-sage-700 mb-3">
+                Share with circles (optional)
+              </label>
+              <MultiSelect
+                options={userCircles.map(circle => ({ id: circle.id, name: circle.name }))}
+                selected={selectedCircles}
+                onChange={setSelectedCircles}
+                placeholder="Choose circles to share with..."
+              />
+              <p className="font-brand text-xs text-sage-500 mt-2">
+                Your response will be visible to members of selected circles. Leave empty to keep private.
+              </p>
+            </div>
           )}
-        </button>
-      </form>
-    </div>
+
+          <button
+            type="submit"
+            disabled={submitting || !response.trim() || response.length > 1000}
+            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          >
+            {submitting ? (
+              <span className="flex items-center justify-center space-x-2">
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span>Sharing...</span>
+              </span>
+            ) : existingResponse ? (
+              'Update Response'
+            ) : useModalFlow ? (
+              'Share Gratitude'
+            ) : (
+              'Share Gratitude'
+            )}
+          </button>
+        </form>
+      </div>
+
+      {/* Share Modal */}
+      <ShareModal 
+        isOpen={showShareModal}
+        onClose={() => setShowShareModal(false)}
+        onShare={handleShare}
+        responseText={response}
+        userCircles={userCircles}
+        isSubmitting={submitting}
+      />
+    </>
   )
 }
