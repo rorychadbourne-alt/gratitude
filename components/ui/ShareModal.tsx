@@ -94,8 +94,8 @@ const ShareModal = ({
       
       {/* Modal */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden">
-          {/* Header */}
+        <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden flex flex-col">
+          {/* Header - Simplified */}
           <div className="flex items-center justify-between p-6 border-b border-gray-100">
             <button
               onClick={onClose}
@@ -106,24 +106,11 @@ const ShareModal = ({
               </svg>
             </button>
             <h2 className="text-lg font-semibold text-gray-800">Share Gratitude</h2>
-            <button
-              onClick={handleShare}
-              disabled={isSubmitting}
-              className="bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white px-4 py-2 rounded-lg font-medium transition-colors"
-            >
-              {isSubmitting ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  <span>Sharing...</span>
-                </div>
-              ) : (
-                'Share'
-              )}
-            </button>
+            <div className="w-6"></div> {/* Spacer for centering */}
           </div>
 
-          {/* Content */}
-          <div className="p-6">
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto p-6">
             {/* Preview */}
             <div className="bg-gray-50 rounded-lg p-4 mb-6">
               <p className="text-sm text-gray-600 mb-2">Your gratitude:</p>
@@ -140,7 +127,7 @@ const ShareModal = ({
               <div className="text-center py-8">
                 <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
                   <svg className="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.196-2.12M17 20v-2a3 3 0 00-5.196-2.12M17 20H7m10 0v-2c0-1.654-1.348-3-3-3H7m10-3V9a4 4 0 10-8 0v6.5M7 20v-2a3 3 0 015.196-2.12M7 20H2v-2a3 3 0 515.196-2.12"/>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.196-2.12M17 20v-2a3 3 0 00-5.196-2.12M17 20H7m10 0v-2c0-1.654-1.348-3-3-3H7m10-3V9a4 4 0 10-8 0v6.5M7 20v-2a3 3 0 515.196-2.12M7 20H2v-2a3 3 0 515.196-2.12"/>
                   </svg>
                 </div>
                 <h3 className="font-semibold text-gray-800 mb-2">Create Your First Circle</h3>
@@ -157,7 +144,7 @@ const ShareModal = ({
                 <h3 className="font-medium text-gray-800 mb-4">Choose circles to share with</h3>
                 
                 {/* Circles List */}
-                <div className="space-y-3 max-h-60 overflow-y-auto">
+                <div className="space-y-3 mb-6">
                   {userCircles.map((circle) => {
                     const isSelected = selectedCircles.includes(circle.id)
                     
@@ -201,7 +188,7 @@ const ShareModal = ({
                 {/* Create Circle Option */}
                 <button
                   onClick={handleCreateCircle}
-                  className="w-full mt-4 p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
+                  className="w-full mb-6 p-3 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-gray-400 hover:text-gray-600 transition-colors flex items-center justify-center gap-2"
                 >
                   <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"/>
@@ -211,7 +198,7 @@ const ShareModal = ({
 
                 {/* Selection Summary */}
                 {selectedCircles.length > 0 && (
-                  <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg mb-6">
                     <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/>
@@ -225,6 +212,35 @@ const ShareModal = ({
               </>
             )}
           </div>
+
+          {/* Fixed Bottom Actions */}
+          {userCircles.length > 0 && (
+            <div className="p-6 border-t border-gray-100 bg-gray-50">
+              <div className="flex gap-3">
+                <button
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 disabled:opacity-50 text-gray-800 py-3 px-4 rounded-lg font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleShare}
+                  disabled={isSubmitting || selectedCircles.length === 0}
+                  className="flex-2 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white py-3 px-6 rounded-lg font-medium transition-colors"
+                >
+                  {isSubmitting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Sharing...</span>
+                    </div>
+                  ) : (
+                    `Share with ${selectedCircles.length} circle${selectedCircles.length !== 1 ? 's' : ''}`
+                  )}
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </>

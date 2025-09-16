@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
-import MultiSelect from '../ui/MultiSelect'
 import ShareModal from '../ui/ShareModal'
 import { updateWeeklyStreak } from '../../lib/streakHelpers'
 import { updateCommunityStreak } from '../../lib/communityStreakHelpers'
@@ -19,10 +18,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [userCircles, setUserCircles] = useState<any[]>([])
-  const [selectedCircles, setSelectedCircles] = useState<string[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
   const [showShareModal, setShowShareModal] = useState(false)
-  const [useModalFlow, setUseModalFlow] = useState(true) // Toggle for testing
 
   useEffect(() => {
     fetchTodaysPrompt()
@@ -102,21 +99,22 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     e.preventDefault()
     if (!response.trim() || response.length > 1000) return
 
-    if (useModalFlow && !existingResponse) {
+    if (!existingResponse) {
       // Show modal for new responses
       setShowShareModal(true)
     } else {
-      // Direct submit for updates or when not using modal
+      // Direct submit for updates
       handleDirectSubmit()
     }
   }
 
   const handleShare = async (selectedCircleIds: string[], responseText: string) => {
-    setSelectedCircles(selectedCircleIds)
     setSubmitting(true)
     setMessage(null)
 
     try {
+      console.log('Creating response with circles:', selectedCircleIds)
+      
       // Create the gratitude response
       const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
@@ -130,12 +128,15 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         .single()
 
       if (responseError) throw responseError
+      console.log('Response created:', responseData.id)
 
       // Update individual weekly streak
       await updateWeeklyStreak(user.id)
 
       // Handle circle sharing and community streak updates
       if (selectedCircleIds.length > 0) {
+        console.log('Linking response to circles...')
+        
         const circleInserts = selectedCircleIds.map(circleId => ({
           response_id: responseData.id,
           circle_id: circleId
@@ -147,7 +148,10 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
         if (circlesError) {
           console.error('Error linking response to circles:', circlesError)
+          throw circlesError
         } else {
+          console.log('Response linked to circles successfully')
+          
           try {
             await Promise.all(
               selectedCircleIds.map(circleId => updateCommunityStreak(circleId))
@@ -162,15 +166,24 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       setMessage('Thank you for sharing your gratitude!')
       setShowShareModal(false)
       
+      // Trigger refresh of both feeds
       if (onNewResponse) {
         onNewResponse()
       }
+      
+      // Force refresh after a short delay to ensure data consistency
+      setTimeout(() => {
+        if (onNewResponse) {
+          onNewResponse()
+        }
+      }, 500)
       
       setTimeout(() => setMessage(null), 3000)
       
     } catch (error: any) {
       console.error('Submit error:', error)
       setMessage(`Error: ${error.message}`)
+      setShowShareModal(false)
     } finally {
       setSubmitting(false)
     }
@@ -188,63 +201,17 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     setMessage(null)
 
     try {
-      if (existingResponse) {
-        const { data, error } = await supabase
-          .from('gratitude_responses')
-          .update({ response_text: response.trim() })
-          .eq('id', existingResponse.id)
-          .select()
-          .single()
+      const { data, error } = await supabase
+        .from('gratitude_responses')
+        .update({ response_text: response.trim() })
+        .eq('id', existingResponse.id)
+        .select()
+        .single()
 
-        if (error) throw error
-        
-        setExistingResponse(data)
-        setMessage('Your response has been updated!')
-      } else {
-        // For non-modal flow, create response with selected circles
-        const { data: responseData, error: responseError } = await supabase
-          .from('gratitude_responses')
-          .insert({
-            user_id: user.id,
-            prompt_id: prompt.id,
-            response_text: response.trim(),
-            is_onboarding_response: false
-          })
-          .select()
-          .single()
-
-        if (responseError) throw responseError
-
-        await updateWeeklyStreak(user.id)
-
-        if (selectedCircles.length > 0) {
-          const circleInserts = selectedCircles.map(circleId => ({
-            response_id: responseData.id,
-            circle_id: circleId
-          }))
-
-          const { error: circlesError } = await supabase
-            .from('response_circles')
-            .insert(circleInserts)
-
-          if (circlesError) {
-            console.error('Error linking response to circles:', circlesError)
-          } else {
-            try {
-              await Promise.all(
-                selectedCircles.map(circleId => updateCommunityStreak(circleId))
-              )
-            } catch (streakError) {
-              console.error('Error updating community streaks:', streakError)
-            }
-          }
-        }
-        
-        setExistingResponse(responseData)
-        setMessage('Thank you for sharing your gratitude!')
-      }
+      if (error) throw error
       
-      setSelectedCircles([])
+      setExistingResponse(data)
+      setMessage('Your response has been updated!')
       
       if (onNewResponse) {
         onNewResponse()
@@ -313,20 +280,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           </div>
         )}
 
-        {/* Testing Toggle - Remove this in production */}
-        <div className="mb-6 flex items-center justify-between bg-purple-50 p-3 rounded-lg border border-purple-200">
-          <span className="text-sm font-medium text-purple-800">
-            {useModalFlow ? 'Using Instagram-style Modal' : 'Using Original Inline Selection'}
-          </span>
-          <button
-            type="button"
-            onClick={() => setUseModalFlow(!useModalFlow)}
-            className="px-3 py-1 text-xs bg-purple-500 hover:bg-purple-600 text-white rounded transition-colors"
-          >
-            Switch
-          </button>
-        </div>
-
         {/* Form */}
         <form onSubmit={handleSubmitClick} className="space-y-6">
           <div>
@@ -349,24 +302,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             />
           </div>
 
-          {/* Show original MultiSelect when not using modal flow */}
-          {!useModalFlow && userCircles.length > 0 && (
-            <div>
-              <label className="block font-brand text-sm font-medium text-sage-700 mb-3">
-                Share with circles (optional)
-              </label>
-              <MultiSelect
-                options={userCircles.map(circle => ({ id: circle.id, name: circle.name }))}
-                selected={selectedCircles}
-                onChange={setSelectedCircles}
-                placeholder="Choose circles to share with..."
-              />
-              <p className="font-brand text-xs text-sage-500 mt-2">
-                Your response will be visible to members of selected circles. Leave empty to keep private.
-              </p>
-            </div>
-          )}
-
           <button
             type="submit"
             disabled={submitting || !response.trim() || response.length > 1000}
@@ -379,8 +314,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               </span>
             ) : existingResponse ? (
               'Update Response'
-            ) : useModalFlow ? (
-              'Share Gratitude'
             ) : (
               'Share Gratitude'
             )}
