@@ -216,7 +216,7 @@ const CircleSelector = ({
             </span>
           </div>
           <p className="text-xs text-yellow-700 mt-1">Gratitude grows when shared with others</p>
-        </div>
+        </div> 
       )}
     </div>
   );
