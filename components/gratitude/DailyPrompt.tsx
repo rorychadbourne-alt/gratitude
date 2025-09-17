@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabase'
 import ShareModal from '../ui/ShareModal'
 import { updateWeeklyStreak } from '../../lib/streakHelpers'
 import { updateCommunityStreak } from '../../lib/communityStreakHelpers'
+import { useToast } from '../ui/ToastProvider'
+import { createToastHelpers } from '../../lib/toastHelpers'
 
 interface DailyPromptProps {
   user: any
@@ -20,11 +22,31 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
   const [showShareModal, setShowShareModal] = useState(false)
+  
+  const toast = useToast()
+  const toasts = createToastHelpers(toast)
 
   useEffect(() => {
     fetchTodaysPrompt()
     fetchUserCircles()
   }, [user?.id])
+
+  // Add milestone check function
+  const checkForMilestone = async (userId: string) => {
+    try {
+      const { count } = await supabase
+        .from('gratitude_responses')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('is_onboarding_response', false)
+
+      if (count && [10, 25, 50, 100].includes(count)) {
+        toasts.milestoneAchieved(count)
+      }
+    } catch (error) {
+      console.error('Error checking milestone:', error)
+    }
+  }
 
   const fetchTodaysPrompt = async () => {
     if (!user?.id) return
@@ -163,7 +185,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       }
       
       setExistingResponse(responseData)
-      setMessage('Thank you for sharing your gratitude!')
+      toasts.gratitudeShared() // Replace setMessage with toast
+      await checkForMilestone(user.id) // Check for milestone
       setShowShareModal(false)
       
       // Trigger refresh of both feeds
@@ -177,8 +200,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           onNewResponse()
         }
       }, 500)
-      
-      setTimeout(() => setMessage(null), 3000)
       
     } catch (error: any) {
       console.error('Submit error:', error)
@@ -211,13 +232,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       if (error) throw error
       
       setExistingResponse(data)
-      setMessage('Your response has been updated!')
+      toasts.gratitudeShared() // Replace setMessage with toast
       
       if (onNewResponse) {
         onNewResponse()
       }
-      
-      setTimeout(() => setMessage(null), 3000)
       
     } catch (error: any) {
       console.error('Submit error:', error)
@@ -229,7 +248,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8 animate-pulse">
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 animate-pulse">
         <div className="h-6 bg-gradient-to-r from-periwinkle-200 to-gold-200 rounded-lg mb-6"></div>
         <div className="h-32 bg-gradient-to-r from-warm-200 to-peach-200 rounded-lg mb-6"></div>
         <div className="h-12 bg-gradient-to-r from-periwinkle-300 to-gold-300 rounded-xl"></div>
@@ -239,7 +258,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (!prompt) {
     return (
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8 text-center">
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 text-center">
         <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-300 to-peach-300 flex items-center justify-center mx-auto mb-4">
           <span className="text-2xl">🌅</span>
         </div>
@@ -250,11 +269,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-8">
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8">
         {/* Prompt Display */}
-        <div className="mb-8 p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
+        <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
           <div className="mb-4">
-            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
+            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today's Gratitude</h3>
             <p className="font-brand text-xs text-sage-500">
               {new Date().toLocaleDateString('en-US', { 
                 weekday: 'long', 
@@ -264,14 +283,14 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             </p>
           </div>
           
-          <p className="font-display text-xl text-sage-800 font-medium leading-relaxed">
+          <p className="font-display text-lg sm:text-xl text-sage-800 font-medium leading-relaxed">
             {prompt.prompt}
           </p>
         </div>
 
-        {/* Success Message */}
+        {/* Error Message (keeping for validation errors) */}
         {message && (
-          <div className={`p-4 rounded-xl mb-6 font-brand font-medium text-center ${
+          <div className={`p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 font-brand font-medium text-center text-sm sm:text-base ${
             message.includes('Error') || message.includes('must be') 
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-green-50 text-green-700 border border-green-200'
@@ -281,7 +300,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmitClick} className="space-y-6">
+        <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6">
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="font-brand text-sm font-medium text-sage-700">
@@ -296,16 +315,17 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               onChange={(e) => setResponse(e.target.value)}
               placeholder="Share your response..."
               required
-              rows={5}
+              rows={4}
               maxLength={1000}
-              className="w-full px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm"
+              className="w-full px-3 sm:px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm text-base"
+              style={{ fontSize: '16px' }} // Prevents zoom on iOS
             />
           </div>
 
           <button
             type="submit"
             disabled={submitting || !response.trim() || response.length > 1000}
-            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base min-h-[48px] active:scale-[0.98]"
           >
             {submitting ? (
               <span className="flex items-center justify-center space-x-2">

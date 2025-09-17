@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
+import { useToast } from '../ui/ToastProvider'
+import { createToastHelpers } from '../../lib/toastHelpers'
 
 interface UserProfileProps {
   user: any
@@ -15,6 +17,9 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const router = useRouter()
+  
+  const toast = useToast()
+  const toasts = createToastHelpers(toast)
 
   const handleSaveDisplayName = async () => {
     if (!displayName.trim()) {
@@ -39,9 +44,8 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
       if (error) throw error
 
       setIsEditingName(false)
-      setMessage('Display name updated successfully!')
+      toasts.displayNameUpdated() // Replace setMessage with toast
       
-      setTimeout(() => setMessage(null), 3000)
     } catch (error: any) {
       console.error('Error updating display name:', error)
       setMessage('Error updating display name. Please try again.')
@@ -72,7 +76,7 @@ export default function UserProfile({ user, profile }: UserProfileProps) {
           </div>
         </div>
         
-        {/* Success/Error Message */}
+        {/* Error Message (keeping for validation errors) */}
         {message && (
           <div className={`p-3 sm:p-4 rounded-xl mb-6 font-brand font-medium text-sm ${
             message.includes('Error') 

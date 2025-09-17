@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useToast } from '../ui/ToastProvider'
+import { createToastHelpers } from '../../lib/toastHelpers'
 
 interface CreateCircleProps {
   user: any
@@ -25,6 +27,9 @@ export default function CreateCircle({ user, onClose, onCircleCreated }: CreateC
   const [centerEmoji, setCenterEmoji] = useState('🙏')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  
+  const toast = useToast()
+  const toasts = createToastHelpers(toast)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -60,6 +65,7 @@ export default function CreateCircle({ user, onClose, onCircleCreated }: CreateC
 
       if (memberError) throw memberError
 
+      toasts.circleCreated(name.trim())
       onCircleCreated()
     } catch (error: any) {
       console.error('Error creating circle:', error)

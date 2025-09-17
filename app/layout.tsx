@@ -1,4 +1,5 @@
 import './globals.css'
+import ToastProvider from '../components/ui/ToastProvider'
 
 export default function RootLayout({
   children,
@@ -13,7 +14,11 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ToastProvider>
+          {children}
+        </ToastProvider>
+      </body>
     </html>
   )
 }

@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { supabase } from '../../lib/supabase'
+import { useToast } from '../ui/ToastProvider'
+import { createToastHelpers } from '../../lib/toastHelpers'
 
 interface JoinCircleProps {
   user: any
@@ -14,6 +16,9 @@ export default function JoinCircle({ user, onClose, onCircleJoined }: JoinCircle
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [circlePreview, setCirclePreview] = useState<any>(null)
+  
+  const toast = useToast()
+  const toasts = createToastHelpers(toast)
 
   const handleInviteCodeChange = async (code: string) => {
     setInviteCode(code)
@@ -82,6 +87,7 @@ export default function JoinCircle({ user, onClose, onCircleJoined }: JoinCircle
 
       if (memberError) throw memberError
 
+      toasts.circleJoined(circleData.name) // Add toast notification
       onCircleJoined()
     } catch (error: any) {
       console.error('Error joining circle:', error)
@@ -241,7 +247,7 @@ export default function JoinCircle({ user, onClose, onCircleJoined }: JoinCircle
                 Need an invite code?
               </h4>
               <div className="text-sm text-gray-600 font-brand space-y-2">
-                <p>• Ask someone who&apos;s already in the circle you want to join</p>
+                <p>• Ask someone who's already in the circle you want to join</p>
                 <p>• Circle creators can share invite codes from their circle settings</p>
                 <p>• You can also create your own circle to invite others</p>
               </div>
