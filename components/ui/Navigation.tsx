@@ -30,99 +30,203 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
     setMobileMenuOpen(false)
   }
 
+  // SVG Logo Component based on your uploaded logo
+  const LogoIcon = ({ size = 36 }: { size?: number }) => (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg 
+        width={size} 
+        height={size} 
+        viewBox="0 0 100 100" 
+        className="transform transition-transform duration-200 hover:scale-105"
+      >
+        <defs>
+          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stopColor="#EC8051" />
+            <stop offset="50%" stopColor="#F19F71" />
+            <stop offset="100%" stopColor="#EDC55F" />
+          </linearGradient>
+        </defs>
+        
+        {/* Outer concentric circles */}
+        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logo-gradient)" strokeWidth="3" opacity="0.8" />
+        <circle cx="50" cy="50" r="35" fill="none" stroke="url(#logo-gradient)" strokeWidth="3" opacity="0.9" />
+        <circle cx="50" cy="50" r="25" fill="none" stroke="url(#logo-gradient)" strokeWidth="3" />
+        
+        {/* Inner filled circle with G */}
+        <circle cx="50" cy="50" r="15" fill="url(#logo-gradient)" />
+        <text 
+          x="50" 
+          y="50" 
+          textAnchor="middle" 
+          dominantBaseline="central" 
+          fill="white" 
+          fontSize="16" 
+          fontWeight="bold"
+          fontFamily="Lora, serif"
+        >
+          G
+        </text>
+        
+        {/* Subtle orbital dots */}
+        <circle cx="50" cy="20" r="2" fill="#EDC55F" opacity="0.7">
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="0 50 50;360 50 50"
+            dur="20s"
+            repeatCount="indefinite"
+          />
+        </circle>
+        <circle cx="80" cy="50" r="1.5" fill="#F19F71" opacity="0.6">
+          <animateTransform
+            attributeName="transform"
+            type="rotate"
+            values="0 50 50;360 50 50"
+            dur="15s"
+            repeatCount="indefinite"
+          />
+        </circle>
+      </svg>
+    </div>
+  )
+
   return (
     <>
-      <nav className="bg-white/90 backdrop-blur-sm shadow-sm border-b border-gray-200 sticky top-0 z-40">
+      <nav className="bg-white/95 backdrop-blur-md shadow-lg border-b border-orange-100 sticky top-0 z-40 relative overflow-hidden">
+        {/* Subtle background orbital elements */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-2 right-20 w-8 h-8">
+            <div className="absolute w-2 h-2 bg-orange-400 rounded-full top-3 left-3"></div>
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '30s' }}>
+              <div className="absolute top-0 left-1/2 w-1 h-1 bg-orange-300 rounded-full transform -translate-x-1/2"></div>
+              <div className="absolute bottom-0 right-0 w-0.5 h-0.5 bg-yellow-400 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        
         <div className="max-w-6xl mx-auto px-4">
           <div className="flex justify-between items-center h-16">
-            {/* Logo */}
+            {/* Enhanced Logo */}
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-                <span className="text-white text-sm font-bold">G</span>
+              <LogoIcon size={40} />
+              <div>
+                <h1 className="text-xl font-display font-bold text-gray-900 hidden sm:block leading-none">
+                  Gratitude Circle
+                </h1>
+                <h1 className="text-lg font-display font-bold text-gray-900 sm:hidden leading-none">
+                  Gratitude
+                </h1>
+                <div className="hidden sm:block text-xs font-brand text-gray-500 -mt-0.5">
+                  Community gratitude sharing
+                </div>
               </div>
-              <h1 className="text-xl font-brand font-bold text-gray-900 hidden sm:block">
-                Gratitude Circle
-              </h1>
-              <h1 className="text-lg font-brand font-bold text-gray-900 sm:hidden">
-                Gratitude
-              </h1>
             </div>
 
             {/* Desktop Navigation */}
-            <div className="hidden sm:flex items-center space-x-6">
+            <div className="hidden sm:flex items-center space-x-2">
               {currentPage !== 'dashboard' && (
                 <button
                   onClick={() => router.push('/')}
-                  className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                  className="relative group text-gray-600 hover:text-orange-600 text-sm font-medium font-brand px-4 py-2 rounded-full transition-all duration-200 hover:bg-orange-50"
                 >
-                  Dashboard
+                  <span className="relative z-10">Dashboard</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
               )}
               
               {currentPage !== 'communities' && (
                 <button
                   onClick={() => router.push('/communities')}
-                  className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                  className="relative group text-gray-600 hover:text-orange-600 text-sm font-medium font-brand px-4 py-2 rounded-full transition-all duration-200 hover:bg-orange-50"
                 >
-                  Communities
+                  <span className="relative z-10">Communities</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
               )}
               
               {currentPage !== 'profile' && (
                 <button
                   onClick={() => router.push('/profile')}
-                  className="text-gray-600 hover:text-periwinkle-600 text-sm font-medium font-brand px-3 py-2 rounded-md transition-colors"
+                  className="relative group text-gray-600 hover:text-orange-600 text-sm font-medium font-brand px-4 py-2 rounded-full transition-all duration-200 hover:bg-orange-50"
                 >
-                  Profile
+                  <span className="relative z-10">Profile</span>
+                  <div className="absolute inset-0 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></div>
                 </button>
               )}
 
-              <button
-                onClick={handleSignOut}
-                className="bg-periwinkle-100 text-periwinkle-700 text-sm font-medium font-brand py-2 px-4 rounded-lg hover:bg-periwinkle-200 transition-colors"
-              >
-                Sign Out
-              </button>
+              <div className="ml-2 pl-2 border-l border-gray-200">
+                <button
+                  onClick={handleSignOut}
+                  className="bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-700 text-sm font-medium font-brand py-2 px-4 rounded-full hover:from-orange-200 hover:to-yellow-200 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5"
+                >
+                  Sign Out
+                </button>
+              </div>
             </div>
 
             {/* Mobile Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="sm:hidden p-2 rounded-md text-gray-600 hover:text-periwinkle-600 hover:bg-gray-100 transition-colors"
+              className="sm:hidden p-2 rounded-full text-gray-600 hover:text-orange-600 hover:bg-orange-50 transition-all duration-200 relative"
               aria-label="Open menu"
             >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              <div className="w-6 h-6 flex flex-col justify-center space-y-1">
+                <span className="block w-6 h-0.5 bg-current rounded-full transition-all duration-200"></span>
+                <span className="block w-6 h-0.5 bg-current rounded-full transition-all duration-200"></span>
+                <span className="block w-6 h-0.5 bg-current rounded-full transition-all duration-200"></span>
+              </div>
             </button>
           </div>
         </div>
       </nav>
 
-      {/* Mobile Menu Overlay */}
+      {/* Enhanced Mobile Menu Overlay */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 sm:hidden">
           {/* Backdrop */}
           <div 
-            className="fixed inset-0 bg-black/50 transition-opacity"
+            className="fixed inset-0 bg-black/50 backdrop-blur-sm transition-opacity"
             onClick={closeMobileMenu}
           ></div>
           
-          {/* Slide-out Menu */}
-          <div className="fixed right-0 top-0 h-full w-80 max-w-sm bg-white shadow-xl transform transition-transform">
-            {/* Menu Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-500 to-periwinkle-600 flex items-center justify-center shadow-md">
-                  <span className="text-white text-sm font-bold">G</span>
+          {/* Slide-out Menu with background motifs */}
+          <div className="fixed right-0 top-0 h-full w-80 max-w-sm bg-white shadow-2xl transform transition-transform relative overflow-hidden">
+            {/* Subtle background patterns */}
+            <div className="absolute inset-0 opacity-8 pointer-events-none">
+              <div className="absolute top-8 right-8 w-16 h-16">
+                <div className="absolute w-3 h-3 bg-orange-300 rounded-full top-6.5 left-6.5"></div>
+                <div className="absolute inset-0 animate-spin" style={{ animationDuration: '25s' }}>
+                  <div className="absolute top-1 left-1/2 w-1.5 h-1.5 bg-orange-400 rounded-full transform -translate-x-1/2"></div>
+                  <div className="absolute bottom-1 right-1 w-1 h-1 bg-yellow-400 rounded-full"></div>
+                  <div className="absolute left-1 top-1/2 w-1 h-1 bg-yellow-500 rounded-full transform -translate-y-1/2"></div>
                 </div>
-                <h2 className="text-lg font-brand font-bold text-gray-900">
-                  Gratitude Circle
-                </h2>
+              </div>
+              
+              <div className="absolute bottom-16 left-8 w-12 h-12">
+                <div className="absolute w-2 h-2 bg-yellow-400 rounded-full top-5 left-5"></div>
+                <div className="absolute inset-0 animate-spin" style={{ animationDuration: '20s', animationDirection: 'reverse' }}>
+                  <div className="absolute top-0 left-1/2 w-1 h-1 bg-orange-300 rounded-full transform -translate-x-1/2"></div>
+                  <div className="absolute bottom-0.5 right-0.5 w-0.5 h-0.5 bg-yellow-500 rounded-full"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Menu Header */}
+            <div className="flex items-center justify-between p-6 border-b border-orange-100 relative z-10">
+              <div className="flex items-center space-x-3">
+                <LogoIcon size={36} />
+                <div>
+                  <h2 className="text-lg font-display font-bold text-gray-900 leading-none">
+                    Gratitude Circle
+                  </h2>
+                  <div className="text-xs font-brand text-gray-500 -mt-0.5">
+                    Community gratitude
+                  </div>
+                </div>
               </div>
               <button
                 onClick={closeMobileMenu}
-                className="p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+                className="p-2 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all duration-200"
                 aria-label="Close menu"
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -132,44 +236,53 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
             </div>
 
             {/* Menu Items */}
-            <nav className="p-6">
-              <div className="space-y-2">
+            <nav className="p-6 relative z-10">
+              <div className="space-y-3">
                 <button
                   onClick={() => handleNavigation('/')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-brand font-medium transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-2xl font-brand font-medium transition-all duration-200 ${
                     currentPage === 'dashboard'
-                      ? 'bg-periwinkle-100 text-periwinkle-800'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 shadow-sm'
+                      : 'text-gray-700 hover:bg-orange-50 hover:text-orange-700'
                   }`}
                 >
-                  Dashboard
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full opacity-60"></div>
+                    <span>Dashboard</span>
+                  </div>
                 </button>
                 
                 <button
                   onClick={() => handleNavigation('/communities')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-brand font-medium transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-2xl font-brand font-medium transition-all duration-200 ${
                     currentPage === 'communities'
-                      ? 'bg-periwinkle-100 text-periwinkle-800'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 shadow-sm'
+                      : 'text-gray-700 hover:bg-orange-50 hover:text-orange-700'
                   }`}
                 >
-                  Communities
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full opacity-60"></div>
+                    <span>Communities</span>
+                  </div>
                 </button>
                 
                 <button
                   onClick={() => handleNavigation('/profile')}
-                  className={`w-full text-left px-4 py-3 rounded-lg font-brand font-medium transition-colors ${
+                  className={`w-full text-left px-4 py-3 rounded-2xl font-brand font-medium transition-all duration-200 ${
                     currentPage === 'profile'
-                      ? 'bg-periwinkle-100 text-periwinkle-800'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-orange-100 to-yellow-100 text-orange-800 shadow-sm'
+                      : 'text-gray-700 hover:bg-orange-50 hover:text-orange-700'
                   }`}
                 >
-                  Profile
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-orange-400 rounded-full opacity-60"></div>
+                    <span>Profile</span>
+                  </div>
                 </button>
               </div>
 
               {/* Divider */}
-              <div className="my-6 border-t border-gray-200"></div>
+              <div className="my-6 border-t border-orange-100"></div>
 
               {/* Sign Out */}
               <button
@@ -177,9 +290,12 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
                   closeMobileMenu()
                   handleSignOut()
                 }}
-                className="w-full text-left px-4 py-3 rounded-lg font-brand font-medium text-red-600 hover:bg-red-50 transition-colors"
+                className="w-full text-left px-4 py-3 rounded-2xl font-brand font-medium text-red-600 hover:bg-red-50 transition-all duration-200"
               >
-                Sign Out
+                <div className="flex items-center space-x-3">
+                  <div className="w-2 h-2 bg-red-400 rounded-full opacity-60"></div>
+                  <span>Sign Out</span>
+                </div>
               </button>
             </nav>
           </div>
