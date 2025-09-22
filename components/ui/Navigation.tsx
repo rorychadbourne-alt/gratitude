@@ -33,7 +33,7 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
 
   return (
     <>
-      <nav className="bg-white/95 backdrop-blur-md shadow-lg border-b border-orange-100 sticky top-0 z-40 relative overflow-hidden">
+      <nav className="bg-gradient-to-r from-orange-50 via-peach-50 to-warm-50 backdrop-blur-md shadow-lg border-b border-orange-200 sticky top-0 z-40 relative overflow-hidden">
         {/* Subtle background orbital elements */}
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="absolute top-2 right-20 w-8 h-8">
@@ -65,9 +65,6 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
                 <h1 className="text-lg font-display font-bold text-gray-900 sm:hidden leading-none">
                   Gratitude
                 </h1>
-                <div className="hidden sm:block text-xs font-brand text-gray-500 -mt-0.5">
-                  Community gratitude sharing
-                </div>
               </div>
             </div>
 
@@ -176,9 +173,6 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
                   <h2 className="text-lg font-display font-bold text-gray-900 leading-none">
                     Gratitude Circle
                   </h2>
-                  <div className="text-xs font-brand text-gray-500 -mt-0.5">
-                    Community gratitude
-                  </div>
                 </div>
               </div>
               <button
