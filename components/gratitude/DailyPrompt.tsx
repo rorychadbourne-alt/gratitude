@@ -12,7 +12,7 @@ interface DailyPromptProps {
   user: any
   onNewResponse?: () => void
 }
-
+ 
 export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [prompt, setPrompt] = useState<any>(null)
   const [response, setResponse] = useState('')
