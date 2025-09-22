@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../../lib/supabase'
 import ShareModal from '../ui/ShareModal'
 import { updateWeeklyStreak } from '../../lib/streakHelpers'
@@ -22,6 +22,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
   const [showShareModal, setShowShareModal] = useState(false)
+  const [showRipple, setShowRipple] = useState(false)
+  const buttonRef = useRef<HTMLButtonElement>(null)
   
   const toast = useToast()
   const toasts = createToastHelpers(toast)
@@ -120,6 +122,10 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const handleSubmitClick = (e: React.FormEvent) => {
     e.preventDefault()
     if (!response.trim() || response.length > 1000) return
+
+    // Trigger ripple effect
+    setShowRipple(true)
+    setTimeout(() => setShowRipple(false), 600)
 
     if (!existingResponse) {
       // Show modal for new responses
@@ -248,7 +254,18 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 animate-pulse">
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 animate-pulse relative overflow-hidden">
+        {/* Subtle orbital elements during loading */}
+        <div className="absolute inset-0 opacity-5 pointer-events-none">
+          <div className="absolute top-4 right-6 w-8 h-8">
+            <div className="absolute w-2 h-2 bg-orange-400 rounded-full top-3 left-3"></div>
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '20s' }}>
+              <div className="absolute top-0 left-1/2 w-1 h-1 bg-orange-300 rounded-full transform -translate-x-1/2"></div>
+              <div className="absolute bottom-0 right-0 w-0.5 h-0.5 bg-yellow-400 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+        
         <div className="h-6 bg-gradient-to-r from-periwinkle-200 to-gold-200 rounded-lg mb-6"></div>
         <div className="h-32 bg-gradient-to-r from-warm-200 to-peach-200 rounded-lg mb-6"></div>
         <div className="h-12 bg-gradient-to-r from-periwinkle-300 to-gold-300 rounded-xl"></div>
@@ -258,9 +275,17 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   if (!prompt) {
     return (
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 text-center">
-        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-300 to-peach-300 flex items-center justify-center mx-auto mb-4">
-          <span className="text-2xl">🌅</span>
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 text-center relative overflow-hidden">
+        {/* Orbital elements around the emoji */}
+        <div className="relative inline-block">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-300 to-peach-300 flex items-center justify-center mx-auto mb-4 relative">
+            <span className="text-2xl">🌅</span>
+            {/* Orbiting dots */}
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '15s' }}>
+              <div className="absolute -top-1 left-1/2 w-1.5 h-1.5 bg-orange-400 rounded-full transform -translate-x-1/2 opacity-60"></div>
+              <div className="absolute -bottom-1 right-2 w-1 h-1 bg-yellow-500 rounded-full opacity-40"></div>
+            </div>
+          </div>
         </div>
         <p className="font-brand text-sage-600">No prompt available for today.</p>
       </div>
@@ -269,9 +294,29 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8">
+      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 relative overflow-hidden">
+        {/* Subtle background orbital elements */}
+        <div className="absolute inset-0 opacity-8 pointer-events-none">
+          <div className="absolute top-6 right-8 w-12 h-12">
+            <div className="absolute w-2 h-2 bg-orange-300 rounded-full top-5 left-5"></div>
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '25s' }}>
+              <div className="absolute top-1 left-1/2 w-1 h-1 bg-orange-400 rounded-full transform -translate-x-1/2"></div>
+              <div className="absolute bottom-1 right-1 w-0.5 h-0.5 bg-yellow-400 rounded-full"></div>
+              <div className="absolute left-1 top-1/2 w-0.5 h-0.5 bg-peach-400 rounded-full transform -translate-y-1/2"></div>
+            </div>
+          </div>
+          
+          <div className="absolute bottom-8 left-6 w-10 h-10">
+            <div className="absolute w-1.5 h-1.5 bg-yellow-400 rounded-full top-4 left-4"></div>
+            <div className="absolute inset-0 animate-spin" style={{ animationDuration: '30s', animationDirection: 'reverse' }}>
+              <div className="absolute top-0 left-1/2 w-0.5 h-0.5 bg-orange-300 rounded-full transform -translate-x-1/2"></div>
+              <div className="absolute bottom-0 right-0 w-1 h-1 bg-peach-300 rounded-full"></div>
+            </div>
+          </div>
+        </div>
+
         {/* Prompt Display */}
-        <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
+        <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm relative z-10">
           <div className="mb-4">
             <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
             <p className="font-brand text-xs text-sage-500">
@@ -290,7 +335,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
         {/* Error Message (keeping for validation errors) */}
         {message && (
-          <div className={`p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 font-brand font-medium text-center text-sm sm:text-base ${
+          <div className={`p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 font-brand font-medium text-center text-sm sm:text-base relative z-10 ${
             message.includes('Error') || message.includes('must be') 
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-green-50 text-green-700 border border-green-200'
@@ -300,15 +345,23 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6 relative z-10">
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="font-brand text-sm font-medium text-sage-700">
                 Share your thoughts
               </label>
-              <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
-                {response.length}/1000
-              </span>
+              {/* Character counter with subtle orbital elements */}
+              <div className="relative">
+                <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
+                  {response.length}/1000
+                </span>
+                {response.length > 500 && (
+                  <div className="absolute -top-1 -right-2 w-2 h-2">
+                    <div className="w-0.5 h-0.5 bg-orange-300 rounded-full animate-ping opacity-40"></div>
+                  </div>
+                )}
+              </div>
             </div>
             <textarea
               value={response}
@@ -322,21 +375,36 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             />
           </div>
 
+          {/* Enhanced button with ripple effect */}
           <button
+            ref={buttonRef}
             type="submit"
             disabled={submitting || !response.trim() || response.length > 1000}
-            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base min-h-[48px] active:scale-[0.98]"
+            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base min-h-[48px] active:scale-[0.98] relative overflow-hidden"
           >
-            {submitting ? (
-              <span className="flex items-center justify-center space-x-2">
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                <span>Sharing...</span>
-              </span>
-            ) : existingResponse ? (
-              'Update Response'
-            ) : (
-              'Share Gratitude'
+            {/* Ripple effect */}
+            {showRipple && (
+              <>
+                <div className="absolute inset-0 pointer-events-none">
+                  <div className="absolute top-1/2 left-1/2 w-4 h-4 bg-white rounded-full opacity-30 animate-ping transform -translate-x-1/2 -translate-y-1/2" style={{ animationDuration: '0.6s' }}></div>
+                  <div className="absolute top-1/2 left-1/2 w-8 h-8 bg-white rounded-full opacity-20 animate-ping transform -translate-x-1/2 -translate-y-1/2" style={{ animationDuration: '0.8s', animationDelay: '0.1s' }}></div>
+                  <div className="absolute top-1/2 left-1/2 w-12 h-12 bg-white rounded-full opacity-10 animate-ping transform -translate-x-1/2 -translate-y-1/2" style={{ animationDuration: '1s', animationDelay: '0.2s' }}></div>
+                </div>
+              </>
             )}
+            
+            <span className="relative z-10">
+              {submitting ? (
+                <span className="flex items-center justify-center space-x-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Sharing...</span>
+                </span>
+              ) : existingResponse ? (
+                'Update Response'
+              ) : (
+                'Share Gratitude'
+              )}
+            </span>
           </button>
         </form>
       </div>
@@ -352,4 +420,5 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       />
     </>
   )
-}
+}</document_content></document>
+</documents>
