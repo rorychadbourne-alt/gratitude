@@ -33,7 +33,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     fetchUserCircles()
   }, [user?.id])
 
-  // Add milestone check function
   const checkForMilestone = async (userId: string) => {
     try {
       const { count } = await supabase
@@ -103,13 +102,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       const circles = data?.map(item => item.circles).filter(Boolean) || []
       
-      // Transform for modal format with mock data
       const transformedCircles = circles.map((circle: any, index: number) => ({
         id: circle.id,
         name: circle.name,
-        memberCount: Math.floor(Math.random() * 10) + 3, // Mock - replace with real query
-        streak: Math.floor(Math.random() * 20) + 1, // Mock - replace with real calculation
-        sharedToday: Math.floor(Math.random() * 5), // Mock - replace with real query
+        memberCount: Math.floor(Math.random() * 10) + 3,
+        streak: Math.floor(Math.random() * 20) + 1,
+        sharedToday: Math.floor(Math.random() * 5),
         color: ['orange', 'blue', 'purple', 'green', 'pink'][index % 5]
       }))
       
@@ -123,15 +121,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     e.preventDefault()
     if (!response.trim() || response.length > 1000) return
 
-    // Trigger ripple effect
     setShowRipple(true)
     setTimeout(() => setShowRipple(false), 600)
 
     if (!existingResponse) {
-      // Show modal for new responses
       setShowShareModal(true)
     } else {
-      // Direct submit for updates
       handleDirectSubmit()
     }
   }
@@ -143,7 +138,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     try {
       console.log('Creating response with circles:', selectedCircleIds)
       
-      // Create the gratitude response
       const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
@@ -158,10 +152,8 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       if (responseError) throw responseError
       console.log('Response created:', responseData.id)
 
-      // Update individual weekly streak
       await updateWeeklyStreak(user.id)
 
-      // Handle circle sharing and community streak updates
       if (selectedCircleIds.length > 0) {
         console.log('Linking response to circles...')
         
@@ -191,16 +183,14 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       }
       
       setExistingResponse(responseData)
-      toasts.gratitudeShared() // Replace setMessage with toast
-      await checkForMilestone(user.id) // Check for milestone
+      toasts.gratitudeShared()
+      await checkForMilestone(user.id)
       setShowShareModal(false)
       
-      // Trigger refresh of both feeds
       if (onNewResponse) {
         onNewResponse()
       }
       
-      // Force refresh after a short delay to ensure data consistency
       setTimeout(() => {
         if (onNewResponse) {
           onNewResponse()
@@ -238,7 +228,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       if (error) throw error
       
       setExistingResponse(data)
-      toasts.gratitudeShared() // Replace setMessage with toast
+      toasts.gratitudeShared()
       
       if (onNewResponse) {
         onNewResponse()
@@ -255,7 +245,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   if (loading) {
     return (
       <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 animate-pulse relative overflow-hidden">
-        {/* Subtle orbital elements during loading */}
         <div className="absolute inset-0 opacity-5 pointer-events-none">
           <div className="absolute top-4 right-6 w-8 h-8">
             <div className="absolute w-2 h-2 bg-orange-400 rounded-full top-3 left-3"></div>
@@ -276,11 +265,9 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   if (!prompt) {
     return (
       <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 text-center relative overflow-hidden">
-        {/* Orbital elements around the emoji */}
         <div className="relative inline-block">
           <div className="w-16 h-16 rounded-full bg-gradient-to-br from-gold-300 to-peach-300 flex items-center justify-center mx-auto mb-4 relative">
             <span className="text-2xl">🌅</span>
-            {/* Orbiting dots */}
             <div className="absolute inset-0 animate-spin" style={{ animationDuration: '15s' }}>
               <div className="absolute -top-1 left-1/2 w-1.5 h-1.5 bg-orange-400 rounded-full transform -translate-x-1/2 opacity-60"></div>
               <div className="absolute -bottom-1 right-2 w-1 h-1 bg-yellow-500 rounded-full opacity-40"></div>
@@ -295,14 +282,13 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   return (
     <>
       <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8 relative overflow-hidden">
-        {/* Subtle background orbital elements */}
         <div className="absolute inset-0 opacity-8 pointer-events-none">
           <div className="absolute top-6 right-8 w-12 h-12">
             <div className="absolute w-2 h-2 bg-orange-300 rounded-full top-5 left-5"></div>
             <div className="absolute inset-0 animate-spin" style={{ animationDuration: '25s' }}>
               <div className="absolute top-1 left-1/2 w-1 h-1 bg-orange-400 rounded-full transform -translate-x-1/2"></div>
               <div className="absolute bottom-1 right-1 w-0.5 h-0.5 bg-yellow-400 rounded-full"></div>
-              <div className="absolute left-1 top-1/2 w-0.5 h-0.5 bg-peach-400 rounded-full transform -translate-y-1/2"></div>
+              <div className="absolute left-1 top-1/2 w-0.5 h-0.5 bg-orange-400 rounded-full transform -translate-y-1/2"></div>
             </div>
           </div>
           
@@ -310,12 +296,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             <div className="absolute w-1.5 h-1.5 bg-yellow-400 rounded-full top-4 left-4"></div>
             <div className="absolute inset-0 animate-spin" style={{ animationDuration: '30s', animationDirection: 'reverse' }}>
               <div className="absolute top-0 left-1/2 w-0.5 h-0.5 bg-orange-300 rounded-full transform -translate-x-1/2"></div>
-              <div className="absolute bottom-0 right-0 w-1 h-1 bg-peach-300 rounded-full"></div>
+              <div className="absolute bottom-0 right-0 w-1 h-1 bg-orange-300 rounded-full"></div>
             </div>
           </div>
         </div>
 
-        {/* Prompt Display */}
         <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm relative z-10">
           <div className="mb-4">
             <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
@@ -333,7 +318,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           </p>
         </div>
 
-        {/* Error Message (keeping for validation errors) */}
         {message && (
           <div className={`p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 font-brand font-medium text-center text-sm sm:text-base relative z-10 ${
             message.includes('Error') || message.includes('must be') 
@@ -344,14 +328,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           </div>
         )}
 
-        {/* Form */}
         <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6 relative z-10">
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="font-brand text-sm font-medium text-sage-700">
                 Share your thoughts
               </label>
-              {/* Character counter with subtle orbital elements */}
               <div className="relative">
                 <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
                   {response.length}/1000
@@ -371,18 +353,16 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               rows={4}
               maxLength={1000}
               className="w-full px-3 sm:px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm text-base"
-              style={{ fontSize: '16px' }} // Prevents zoom on iOS
+              style={{ fontSize: '16px' }}
             />
           </div>
 
-          {/* Enhanced button with ripple effect */}
           <button
             ref={buttonRef}
             type="submit"
             disabled={submitting || !response.trim() || response.length > 1000}
             className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base min-h-[48px] active:scale-[0.98] relative overflow-hidden"
           >
-            {/* Ripple effect */}
             {showRipple && (
               <>
                 <div className="absolute inset-0 pointer-events-none">
@@ -409,7 +389,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         </form>
       </div>
 
-      {/* Share Modal */}
       <ShareModal 
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
@@ -420,5 +399,4 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       />
     </>
   )
-}</document_content></document>
-</documents>
+}
