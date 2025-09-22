@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Image from 'next/image'
 import { supabase } from '../../lib/supabase'
 
 interface NavigationProps {
@@ -30,66 +31,6 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
     setMobileMenuOpen(false)
   }
 
-  // SVG Logo Component based on your uploaded logo
-  const LogoIcon = ({ size = 36 }: { size?: number }) => (
-    <div className="relative" style={{ width: size, height: size }}>
-      <svg 
-        width={size} 
-        height={size} 
-        viewBox="0 0 100 100" 
-        className="transform transition-transform duration-200 hover:scale-105"
-      >
-        <defs>
-          <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#EC8051" />
-            <stop offset="50%" stopColor="#F19F71" />
-            <stop offset="100%" stopColor="#EDC55F" />
-          </linearGradient>
-        </defs>
-        
-        {/* Outer concentric circles */}
-        <circle cx="50" cy="50" r="45" fill="none" stroke="url(#logo-gradient)" strokeWidth="3" opacity="0.8" />
-        <circle cx="50" cy="50" r="35" fill="none" stroke="url(#logo-gradient)" strokeWidth="3" opacity="0.9" />
-        <circle cx="50" cy="50" r="25" fill="none" stroke="url(#logo-gradient)" strokeWidth="3" />
-        
-        {/* Inner filled circle with G */}
-        <circle cx="50" cy="50" r="15" fill="url(#logo-gradient)" />
-        <text 
-          x="50" 
-          y="50" 
-          textAnchor="middle" 
-          dominantBaseline="central" 
-          fill="white" 
-          fontSize="16" 
-          fontWeight="bold"
-          fontFamily="Lora, serif"
-        >
-          G
-        </text>
-        
-        {/* Subtle orbital dots */}
-        <circle cx="50" cy="20" r="2" fill="#EDC55F" opacity="0.7">
-          <animateTransform
-            attributeName="transform"
-            type="rotate"
-            values="0 50 50;360 50 50"
-            dur="20s"
-            repeatCount="indefinite"
-          />
-        </circle>
-        <circle cx="80" cy="50" r="1.5" fill="#F19F71" opacity="0.6">
-          <animateTransform
-            attributeName="transform"
-            type="rotate"
-            values="0 50 50;360 50 50"
-            dur="15s"
-            repeatCount="indefinite"
-          />
-        </circle>
-      </svg>
-    </div>
-  )
-
   return (
     <>
       <nav className="bg-white/95 backdrop-blur-md shadow-lg border-b border-orange-100 sticky top-0 z-40 relative overflow-hidden">
@@ -108,7 +49,15 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
           <div className="flex justify-between items-center h-16">
             {/* Enhanced Logo */}
             <div className="flex items-center space-x-3">
-              <LogoIcon size={40} />
+              <div className="w-10 h-10 relative">
+                <Image
+                  src="/logo.png"
+                  alt="Gratitude Circle Logo"
+                  fill
+                  className="object-contain hover:scale-105 transition-transform duration-200"
+                  priority
+                />
+              </div>
               <div>
                 <h1 className="text-xl font-display font-bold text-gray-900 hidden sm:block leading-none">
                   Gratitude Circle
@@ -214,7 +163,15 @@ export default function Navigation({ currentPage = 'dashboard' }: NavigationProp
             {/* Menu Header */}
             <div className="flex items-center justify-between p-6 border-b border-orange-100 relative z-10">
               <div className="flex items-center space-x-3">
-                <LogoIcon size={36} />
+                <div className="w-9 h-9 relative">
+                  <Image
+                    src="/logo.png"
+                    alt="Gratitude Circle Logo"
+                    fill
+                    className="object-contain hover:scale-105 transition-transform duration-200"
+                    priority
+                  />
+                </div>
                 <div>
                   <h2 className="text-lg font-display font-bold text-gray-900 leading-none">
                     Gratitude Circle
