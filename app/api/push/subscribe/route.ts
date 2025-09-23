@@ -10,6 +10,7 @@ webpush.setVapidDetails(
 );
 
 // For now, we'll store subscriptions in memory (you can add database later)
+// Note: In production, you'd want to use a proper database
 const subscriptions = new Map();
 
 export async function POST(request: NextRequest) {
@@ -71,6 +72,3 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
-
-// Export the subscription map so other API routes can access it
-export { subscriptions };
