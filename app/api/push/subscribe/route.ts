@@ -9,8 +9,8 @@ webpush.setVapidDetails(
   process.env.VAPID_PRIVATE_KEY!
 );
 
-// For now, we'll store subscriptions in memory (you can add database later)
-// Note: In production, you'd want to use a proper database
+// Shared subscriptions storage (in memory for now)
+// In production, you'd use a proper database
 const subscriptions = new Map();
 
 export async function POST(request: NextRequest) {
@@ -41,13 +41,17 @@ export async function POST(request: NextRequest) {
     // Store in memory (replace with database later)
     subscriptions.set(userData.userId, subscriptionDoc);
 
-    console.log('Push subscription saved:', userData.userId);
+    console.log('Push subscription saved:', userData.userId, {
+      reminderTime: subscriptionDoc.reminderTime,
+      timezone: subscriptionDoc.timezone,
+      days: Object.entries(subscriptionDoc.reminderDays).filter(([, enabled]) => enabled).map(([day]) => day)
+    });
 
     // Send welcome notification
     try {
       const welcomePayload = JSON.stringify({
         title: 'Daily Gratitude Reminders Enabled! 🎉',
-        body: 'You\'ll receive gentle daily reminders to practice gratitude.',
+        body: `You'll receive reminders at ${subscriptionDoc.reminderTime} in your local time.`,
         url: '/',
         tag: 'welcome'
       });
@@ -61,7 +65,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ 
       success: true, 
-      message: 'Subscription saved successfully' 
+      message: 'Subscription saved successfully',
+      settings: {
+        reminderTime: subscriptionDoc.reminderTime,
+        reminderDays: subscriptionDoc.reminderDays,
+        timezone: subscriptionDoc.timezone
+      }
     });
 
   } catch (error: any) {
@@ -72,3 +81,20 @@ export async function POST(request: NextRequest) {
     }, { status: 500 });
   }
 }
+
+// GET method to check current subscriptions (for debugging)
+export async function GET() {
+  return NextResponse.json({
+    subscriptionsCount: subscriptions.size,
+    subscriptions: Array.from(subscriptions.entries()).map(([userId, sub]: [string, any]) => ({
+      userId,
+      reminderTime: sub.reminderTime,
+      timezone: sub.timezone,
+      active: sub.active,
+      createdAt: sub.createdAt
+    }))
+  });
+}
+
+// Make subscriptions available to other modules
+export { subscriptions };

@@ -32,6 +32,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     sunday: true
   });
   const [savedSettings, setSavedSettings] = useState(false);
+  const [testingReminder, setTestingReminder] = useState(false);
 
   const handleEnableNotifications = async () => {
     const result = await enableNotifications({
@@ -53,6 +54,30 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     await disableNotifications();
     setSavedSettings(true);
     setTimeout(() => setSavedSettings(false), 3000);
+  };
+
+  const handleTestReminder = async () => {
+    setTestingReminder(true);
+    try {
+      const response = await fetch('/api/push/test-reminder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId })
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        alert('🧪 Test reminder sent! Check your notifications.');
+      } else {
+        alert('❌ Failed to send test reminder: ' + result.error);
+      }
+    } catch (error) {
+      alert('❌ Error sending test reminder');
+      console.error('Test reminder error:', error);
+    } finally {
+      setTestingReminder(false);
+    }
   };
 
   const handleDayToggle = (day: keyof typeof reminderDays) => {
@@ -149,6 +174,13 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             >
               {loading ? 'Disabling...' : '🔕 Disable Reminders'}
             </button>
+            <button
+              onClick={handleTestReminder}
+              disabled={loading || testingReminder}
+              className="btn btn-test"
+            >
+              {testingReminder ? 'Sending...' : '🧪 Send Test Reminder'}
+            </button>
           </div>
         )}
       </div>
@@ -166,6 +198,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           <li>Reminders only on the days you select</li>
           <li>Tap the notification to quickly add your gratitude</li>
           <li>No reminders if you&apos;ve already completed your daily entry</li>
+          <li>Use the test button to preview what your reminders will look like</li>
         </ul>
       </div>
 
@@ -326,6 +359,16 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         .btn-outline:hover:not(:disabled) {
           background: #dc3545;
           color: white;
+          transform: translateY(-1px);
+        }
+
+        .btn-test {
+          background: #17a2b8;
+          color: white;
+        }
+
+        .btn-test:hover:not(:disabled) {
+          background: #138496;
           transform: translateY(-1px);
         }
 
