@@ -103,7 +103,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           onChange={handleTimeChange}
           className="time-input"
         />
-        <p className="help-text">Choose when you'd like your daily gratitude reminder</p>
+        <p className="help-text">Choose when you&apos;d like your daily gratitude reminder</p>
       </div>
 
       <div className="settings-section">
@@ -165,7 +165,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           <li>Get gentle daily reminders at your chosen time</li>
           <li>Reminders only on the days you select</li>
           <li>Tap the notification to quickly add your gratitude</li>
-          <li>No reminders if you've already completed your daily entry</li>
+          <li>No reminders if you&apos;ve already completed your daily entry</li>
         </ul>
       </div>
 
