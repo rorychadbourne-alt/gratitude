@@ -1,5 +1,6 @@
 import './globals.css'
 import ToastProvider from '../components/ui/ToastProvider'
+import ServiceWorkerRegistration from '../components/ServiceWorkerRegistration'
 
 export default function RootLayout({
   children,
@@ -9,13 +10,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link 
-          href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap" 
+        <link
+          href="https://fonts.googleapis.com/css2?family=Varela+Round&family=Lora:ital,wght@0,400;0,500;0,600;1,400&display=swap"
           rel="stylesheet"
         />
       </head>
       <body>
         <ToastProvider>
+          <ServiceWorkerRegistration />
           {children}
         </ToastProvider>
       </body>
