@@ -18,7 +18,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     isSubscribed,
     loading,
     enableNotifications,
-    disableNotifications
+    disableNotifications 
   } = usePushNotifications();
 
   const [reminderTime, setReminderTime] = useState('19:00'); // Default 7 PM
