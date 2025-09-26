@@ -1,6 +1,7 @@
 // app/api/push/send-daily-reminders/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
+import { subscriptionStorage } from 'lib/subscriptions';
 
 // Configure web-push with your VAPID keys
 webpush.setVapidDetails(
@@ -8,10 +9,6 @@ webpush.setVapidDetails(
   process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
-
-// Import the subscriptions from the subscribe route
-// Note: In production, you'd use a proper database
-let subscriptions = new Map();
 
 export async function POST(request: NextRequest) {
   // Security: Only allow POST requests with correct auth token
@@ -23,12 +20,12 @@ export async function POST(request: NextRequest) {
 
   try {
     const now = new Date();
-    const currentDay = now.toLocaleDateString('en-US', { weekday: 'long' });
+    const currentDay = now.toLocaleDateString('en-US', { weekday: 'short' });
     
     console.log(`Sending daily reminders for ${currentDay} at ${now.toISOString()}`);
 
     // Get all subscriptions that should receive notifications today
-    const eligibleSubscriptions = Array.from(subscriptions.values()).filter((sub: any) => {
+    const eligibleSubscriptions = subscriptionStorage.getWhere((sub) => {
       return sub.active && sub.reminderDays && sub.reminderDays[currentDay];
     });
 
@@ -82,6 +79,7 @@ export async function POST(request: NextRequest) {
         // If subscription is invalid, deactivate it
         if (error.statusCode === 410 || error.statusCode === 404) {
           sub.active = false;
+          subscriptionStorage.set(sub.userId, sub);
           console.log(`Deactivated invalid subscription for user ${sub.userId}`);
         }
       }
@@ -135,10 +133,7 @@ async function shouldSendReminderNow(subscription: any, currentTime: Date): Prom
 export async function GET() {
   return NextResponse.json({
     message: 'Daily reminders endpoint is working',
-    subscriptionsCount: subscriptions.size,
+    subscriptionsCount: subscriptionStorage.size(),
     currentTime: new Date().toISOString()
   });
 }
-
-// Export the subscriptions so the subscribe route can use it
-export { subscriptions };

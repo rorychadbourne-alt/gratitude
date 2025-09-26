@@ -1,6 +1,7 @@
 // app/api/push/test-reminder/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
+import { subscriptionStorage } from 'lib/subscriptions';
 
 // Configure web-push with your VAPID keys
 webpush.setVapidDetails(
@@ -8,9 +9,6 @@ webpush.setVapidDetails(
   process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
-
-// Import subscriptions (you'll need to implement a proper shared storage solution)
-const subscriptions = new Map();
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's subscription
-    const subscription = subscriptions.get(userId);
+    const subscription = subscriptionStorage.get(userId);
     
     if (!subscription || !subscription.active) {
       return NextResponse.json({ error: 'No active subscription found for user' }, { status: 404 });
@@ -65,7 +63,7 @@ export async function POST(request: NextRequest) {
 // GET method to send test reminder to all active subscriptions
 export async function GET() {
   try {
-    const activeSubscriptions = Array.from(subscriptions.values()).filter((sub: any) => sub.active);
+    const activeSubscriptions = subscriptionStorage.getWhere(sub => sub.active);
     
     if (activeSubscriptions.length === 0) {
       return NextResponse.json({

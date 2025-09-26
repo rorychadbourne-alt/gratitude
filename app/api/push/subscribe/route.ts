@@ -1,17 +1,14 @@
 // app/api/push/subscribe/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import webpush from 'web-push';
+import { subscriptionStorage } from 'lib/subscriptions';
 
 // Configure web-push with your VAPID keys
 webpush.setVapidDetails(
-  'mailto:rorychadbourne@gmail.com', // Use your email
+  'mailto:rorychadbourne@gmail.com',
   process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
 );
-
-// Shared subscriptions storage (in memory for now)
-// In production, you'd use a proper database
-const subscriptions = new Map();
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,7 +18,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid subscription data' }, { status: 400 });
     }
 
-    // Store subscription (in memory for now - you can add database later)
+    // Store subscription using shared storage
     const subscriptionDoc = {
       userId: userData.userId,
       endpoint: subscription.endpoint,
@@ -38,8 +35,8 @@ export async function POST(request: NextRequest) {
       active: true
     };
 
-    // Store in memory (replace with database later)
-    subscriptions.set(userData.userId, subscriptionDoc);
+    // Save to shared storage
+    subscriptionStorage.set(userData.userId, subscriptionDoc);
 
     console.log('Push subscription saved:', userData.userId, {
       reminderTime: subscriptionDoc.reminderTime,
@@ -84,10 +81,12 @@ export async function POST(request: NextRequest) {
 
 // GET method to check current subscriptions (for debugging)
 export async function GET() {
+  const allSubscriptions = subscriptionStorage.getAll();
+  
   return NextResponse.json({
-    subscriptionsCount: subscriptions.size,
-    subscriptions: Array.from(subscriptions.entries()).map(([userId, sub]: [string, any]) => ({
-      userId,
+    subscriptionsCount: subscriptionStorage.size(),
+    subscriptions: allSubscriptions.map(sub => ({
+      userId: sub.userId,
       reminderTime: sub.reminderTime,
       timezone: sub.timezone,
       active: sub.active,
@@ -95,6 +94,3 @@ export async function GET() {
     }))
   });
 }
-
-// Make subscriptions available to other modules
-export { subscriptions };
