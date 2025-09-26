@@ -68,12 +68,12 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       const result = await response.json();
       
       if (result.success) {
-        alert('🧪 Test reminder sent! Check your notifications.');
+        alert('Test reminder sent! Check your notifications.');
       } else {
-        alert('❌ Failed to send test reminder: ' + result.error);
+        alert('Failed to send test reminder: ' + result.error);
       }
     } catch (error) {
-      alert('❌ Error sending test reminder');
+      alert('Error sending test reminder');
       console.error('Test reminder error:', error);
     } finally {
       setTestingReminder(false);
@@ -87,14 +87,34 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     }));
   };
 
-  const handleTimeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setReminderTime(e.target.value);
+  };
+
+  // Generate time options in 15-minute intervals
+  const generateTimeOptions = () => {
+    const options = [];
+    for (let hour = 0; hour < 24; hour++) {
+      for (let minute of [0, 15, 30, 45]) {
+        const timeValue = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+        const hourStr = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+        const ampm = hour >= 12 ? 'PM' : 'AM';
+        const minuteStr = minute === 0 ? '00' : minute.toString();
+        const timeLabel = `${hourStr}:${minuteStr} ${ampm}`;
+        
+        options.push({
+          value: timeValue,
+          label: timeLabel
+        });
+      }
+    }
+    return options;
   };
 
   if (!isSupported) {
     return (
       <div className="notification-settings unsupported">
-        <h3>📱 Daily Reminders</h3>
+        <h3>Daily Reminders</h3>
         <div className="alert alert-warning">
           <p>Push notifications are not supported in your browser. You can still use in-app notifications!</p>
         </div>
@@ -104,11 +124,11 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
 
   return (
     <div className="notification-settings">
-      <h3>📱 Daily Reminder Settings</h3>
+      <h3>Daily Reminder Settings</h3>
       
       <div className="notification-status">
         <div className={`status-badge ${isSubscribed ? 'enabled' : 'disabled'}`}>
-          {isSubscribed ? '✅ Notifications Enabled' : '🔕 Notifications Disabled'}
+          {isSubscribed ? 'Notifications Enabled' : 'Notifications Disabled'}
         </div>
         {permission === 'denied' && (
           <p className="warning-text">
@@ -119,20 +139,25 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
 
       <div className="settings-section">
         <label htmlFor="reminder-time">
-          <strong>⏰ Reminder Time</strong>
+          <strong>Reminder Time</strong>
         </label>
-        <input
+        <select
           id="reminder-time"
-          type="time"
           value={reminderTime}
           onChange={handleTimeChange}
-          className="time-input"
-        />
-        <p className="help-text">Choose when you&apos;d like your daily gratitude reminder</p>
+          className="time-select"
+        >
+          {generateTimeOptions().map(time => (
+            <option key={time.value} value={time.value}>
+              {time.label}
+            </option>
+          ))}
+        </select>
+        <p className="help-text">Choose when you'd like your daily gratitude reminder</p>
       </div>
 
       <div className="settings-section">
-        <label><strong>📅 Reminder Days</strong></label>
+        <label><strong>Reminder Days</strong></label>
         <div className="days-selector">
           {Object.entries(reminderDays).map(([day, enabled]) => (
             <label key={day} className="day-checkbox">
@@ -156,7 +181,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             disabled={loading || permission === 'denied'}
             className="btn btn-primary"
           >
-            {loading ? 'Setting up...' : '🔔 Enable Daily Reminders'}
+            {loading ? 'Setting up...' : 'Enable Daily Reminders'}
           </button>
         ) : (
           <div className="enabled-actions">
@@ -165,21 +190,21 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
               disabled={loading}
               className="btn btn-secondary"
             >
-              {loading ? 'Saving...' : '💾 Save Changes'}
+              {loading ? 'Saving...' : 'Save Changes'}
             </button>
             <button
               onClick={handleDisableNotifications}
               disabled={loading}
               className="btn btn-outline"
             >
-              {loading ? 'Disabling...' : '🔕 Disable Reminders'}
+              {loading ? 'Disabling...' : 'Disable Reminders'}
             </button>
             <button
               onClick={handleTestReminder}
               disabled={loading || testingReminder}
               className="btn btn-test"
             >
-              {testingReminder ? 'Sending...' : '🧪 Send Test Reminder'}
+              {testingReminder ? 'Sending...' : 'Send Test Reminder'}
             </button>
           </div>
         )}
@@ -187,17 +212,17 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
 
       {savedSettings && (
         <div className="success-message">
-          ✅ Settings saved successfully!
+          Settings saved successfully!
         </div>
       )}
 
       <div className="info-section">
-        <h4>💡 How it works</h4>
+        <h4>How it works</h4>
         <ul>
           <li>Get gentle daily reminders at your chosen time</li>
           <li>Reminders only on the days you select</li>
           <li>Tap the notification to quickly add your gratitude</li>
-          <li>No reminders if you&apos;ve already completed your daily entry</li>
+          <li>No reminders if you've already completed your daily entry</li>
           <li>Use the test button to preview what your reminders will look like</li>
         </ul>
       </div>
@@ -252,17 +277,18 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           font-size: 1rem;
         }
 
-        .time-input {
+        .time-select {
           padding: 12px 16px;
           border: 2px solid #e1e5e9;
           border-radius: 8px;
           font-size: 16px;
-          width: 160px;
+          width: 200px;
           background: white;
           transition: border-color 0.2s;
+          cursor: pointer;
         }
 
-        .time-input:focus {
+        .time-select:focus {
           outline: none;
           border-color: #3498db;
         }
@@ -448,9 +474,9 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             flex-direction: column;
           }
           
-          .time-input {
+          .time-select {
             width: 100%;
-            max-width: 200px;
+            max-width: 250px;
           }
 
           .days-selector {

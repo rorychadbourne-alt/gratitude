@@ -125,7 +125,7 @@ function shouldSendReminderNow(subscription: any, currentTime: Date): { send: bo
     // Parse reminder time
     const [reminderHour, reminderMinute] = reminderTime.split(':').map(Number);
     
-    // Check if current time matches reminder time (within 30-minute window)
+    // Check if current time matches reminder time (within 15-minute window)
     const currentMinutes = userHour * 60 + userMinute;
     const reminderMinutes = reminderHour * 60 + reminderMinute;
     const timeDiff = Math.abs(currentMinutes - reminderMinutes);
