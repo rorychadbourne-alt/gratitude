@@ -330,10 +330,10 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           color: #495057;
           font-size: 0.9rem;
         }
- 
+
         .action-buttons {
           margin: 28px 0 20px 0;
-          display: flex; 
+          display: flex;
           gap: 12px;
           flex-wrap: wrap;
         }
