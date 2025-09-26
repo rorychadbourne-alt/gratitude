@@ -8,8 +8,8 @@ webpush.setVapidDetails(
   'mailto:rorychadbourne@gmail.com',
   process.env.VAPID_PUBLIC_KEY!,
   process.env.VAPID_PRIVATE_KEY!
-);
-
+); 
+ 
 export async function POST(request: NextRequest) {
   try {
     const { subscription, userData } = await request.json();
