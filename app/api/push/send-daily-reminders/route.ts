@@ -130,8 +130,8 @@ function shouldSendReminderNow(subscription: any, currentTime: Date): { send: bo
     const reminderMinutes = reminderHour * 60 + reminderMinute;
     const timeDiff = Math.abs(currentMinutes - reminderMinutes);
     
-    // Send notification if we're within 30 minutes of reminder time
-    if (timeDiff <= 30) {
+    // Send notification if we're within 15 minutes of reminder time
+    if (timeDiff <= 15) {
       return { send: true, reason: `Within reminder window (${timeDiff}min difference)` };
     }
     
