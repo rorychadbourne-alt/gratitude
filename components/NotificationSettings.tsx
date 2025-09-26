@@ -476,7 +476,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           
           .time-select {
             width: 100%;
-            max-width: 250px;
+            max-width: 250px; 
           }
 
           .days-selector {
