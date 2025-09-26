@@ -6,7 +6,7 @@ import { subscriptionStorage } from 'lib/subscriptions';
 // Configure web-push with your VAPID keys
 webpush.setVapidDetails(
   'mailto:rorychadbourne@gmail.com',
-  process.env.VAPID_PUBLIC_KEY!,
+  process.env.VAPID_PUBLIC_KEY!, 
   process.env.VAPID_PRIVATE_KEY!
 ); 
  
