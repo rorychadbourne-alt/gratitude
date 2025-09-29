@@ -55,19 +55,32 @@ export default function ProfilePage() {
   }, [router])
 
   const handleToggleNotifications = async () => {
-    if (!user) return
+    console.log('Toggle clicked! Current state:', { isSubscribed, savingNotifications, notificationsLoading })
+    
+    if (!user) {
+      console.log('No user found')
+      return
+    }
+    
+    if (savingNotifications) {
+      console.log('Already saving, ignoring click')
+      return
+    }
     
     setSavingNotifications(true)
     setNotificationMessage('')
 
     try {
       if (isSubscribed) {
-        await disableNotifications()
+        console.log('Disabling notifications...')
+        const result = await disableNotifications()
+        console.log('Disable result:', result)
         setNotificationMessage('Notifications disabled')
       } else {
+        console.log('Enabling notifications...')
         const result = await enableNotifications({
           userId: user.id,
-          reminderTime: '07:00',
+          reminderTime: '19:00',
           reminderDays: {
             monday: true,
             tuesday: true,
@@ -79,6 +92,7 @@ export default function ProfilePage() {
           },
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
         })
+        console.log('Enable result:', result)
 
         if (result.success) {
           setNotificationMessage('Notifications enabled!')
@@ -112,6 +126,8 @@ export default function ProfilePage() {
     return null
   }
 
+  const isDisabled = savingNotifications || notificationsLoading
+
   return (
     <div className="min-h-screen bg-morning-gradient">
       {/* Mobile-Optimized Navigation */}
@@ -144,22 +160,25 @@ export default function ProfilePage() {
 
             {isSupported && permission !== 'denied' && (
               <button
+                type="button"
                 onClick={handleToggleNotifications}
-                disabled={savingNotifications || notificationsLoading}
+                disabled={isDisabled}
                 className={`
-                  relative inline-flex h-11 w-20 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
+                  relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent 
                   transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-periwinkle-500 focus:ring-offset-2
                   ${isSubscribed ? 'bg-periwinkle-500' : 'bg-gray-200'}
-                  ${(savingNotifications || notificationsLoading) ? 'opacity-50 cursor-not-allowed' : ''}
+                  ${isDisabled ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'}
                 `}
                 role="switch"
                 aria-checked={isSubscribed}
+                aria-label="Toggle daily reminder notifications"
               >
                 <span
+                  aria-hidden="true"
                   className={`
-                    pointer-events-none inline-block h-10 w-10 transform rounded-full bg-white shadow-lg ring-0 
+                    pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 
                     transition duration-200 ease-in-out
-                    ${isSubscribed ? 'translate-x-9' : 'translate-x-0'}
+                    ${isSubscribed ? 'translate-x-5' : 'translate-x-0'}
                   `}
                 />
               </button>
