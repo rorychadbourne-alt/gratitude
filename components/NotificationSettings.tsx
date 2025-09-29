@@ -159,7 +159,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           <span className="info-icon">ℹ️</span>
           <div>
             <strong>Free Tier Notification</strong>
-            <p>Due to free tier limitations, reminders are sent once daily. You'll receive your notification at a consistent time each day.</p>
+            <p>Due to free tier limitations, reminders are sent once daily. You&apos;ll receive your notification at a consistent time each day.</p>
           </div>
         </div>
         
