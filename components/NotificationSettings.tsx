@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { usePushNotifications } from '../utils/pushNotifications';
 
 interface NotificationSettingsProps {
@@ -91,24 +91,39 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     setReminderTime(e.target.value);
   };
 
-  // Generate time options in 15-minute intervals
+  // Generate hourly time options with range display
   const generateTimeOptions = () => {
     const options = [];
     for (let hour = 0; hour < 24; hour++) {
-      for (let minute of [0, 15, 30, 45]) {
-        const timeValue = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-        const hourStr = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-        const ampm = hour >= 12 ? 'PM' : 'AM';
-        const minuteStr = minute === 0 ? '00' : minute.toString();
-        const timeLabel = `${hourStr}:${minuteStr} ${ampm}`;
-        
-        options.push({
-          value: timeValue,
-          label: timeLabel
-        });
-      }
+      const timeValue = `${hour.toString().padStart(2, '0')}:00`;
+      const nextHour = (hour + 1) % 24;
+      
+      const startHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+      const endHour = nextHour === 0 ? 12 : nextHour > 12 ? nextHour - 12 : nextHour;
+      const startAmpm = hour >= 12 ? 'PM' : 'AM';
+      const endAmpm = nextHour >= 12 ? 'PM' : 'AM';
+      
+      const timeLabel = `${startHour}:00 ${startAmpm} - ${endHour}:00 ${endAmpm}`;
+      
+      options.push({
+        value: timeValue,
+        label: timeLabel
+      });
     }
     return options;
+  };
+
+  // Get the time range for display
+  const getTimeRangeDisplay = () => {
+    const hour = parseInt(reminderTime.split(':')[0]);
+    const nextHour = (hour + 1) % 24;
+    
+    const startHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+    const endHour = nextHour === 0 ? 12 : nextHour > 12 ? nextHour - 12 : nextHour;
+    const startAmpm = hour >= 12 ? 'PM' : 'AM';
+    const endAmpm = nextHour >= 12 ? 'PM' : 'AM';
+    
+    return `${startHour}:00 ${startAmpm} - ${endHour}:00 ${endAmpm}`;
   };
 
   if (!isSupported) {
@@ -139,7 +154,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
 
       <div className="settings-section">
         <label htmlFor="reminder-time">
-          <strong>Reminder Time</strong>
+          <strong>Reminder Time Window</strong>
         </label>
         <select
           id="reminder-time"
@@ -153,7 +168,14 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             </option>
           ))}
         </select>
-        <p className="help-text">Choose when you'd like your daily gratitude reminder</p>
+        <p className="help-text">
+          You'll receive your reminder sometime during the selected hour
+        </p>
+        {isSubscribed && (
+          <div className="time-info">
+            Selected window: <strong>{getTimeRangeDisplay()}</strong>
+          </div>
+        )}
       </div>
 
       <div className="settings-section">
@@ -219,11 +241,11 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       <div className="info-section">
         <h4>How it works</h4>
         <ul>
-          <li>Get gentle daily reminders at your chosen time</li>
+          <li>Choose a one-hour time window for your daily reminder</li>
+          <li>You'll receive a notification sometime during that hour</li>
           <li>Reminders only on the days you select</li>
           <li>Tap the notification to quickly add your gratitude</li>
-          <li>No reminders if you've already completed your daily entry</li>
-          <li>Use the test button to preview what your reminders will look like</li>
+          <li>Use the test button to preview your reminders anytime</li>
         </ul>
       </div>
 
@@ -282,7 +304,8 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           border: 2px solid #e1e5e9;
           border-radius: 8px;
           font-size: 16px;
-          width: 200px;
+          width: 100%;
+          max-width: 280px;
           background: white;
           transition: border-color 0.2s;
           cursor: pointer;
@@ -298,6 +321,16 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           font-size: 14px;
           margin-top: 6px;
           font-style: italic;
+        }
+
+        .time-info {
+          margin-top: 10px;
+          padding: 10px 14px;
+          background: #e7f3ff;
+          border-left: 3px solid #2196f3;
+          border-radius: 4px;
+          font-size: 14px;
+          color: #1976d2;
         }
 
         .days-selector {
@@ -476,7 +509,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           
           .time-select {
             width: 100%;
-            max-width: 250px; 
           }
 
           .days-selector {
