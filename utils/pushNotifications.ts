@@ -166,17 +166,14 @@ class PushNotificationManager {
   }
 
   // Remove subscription from server
-  async removeSubscriptionFromServer(): Promise<boolean> {
+  async removeSubscriptionFromServer(userId: string): Promise<boolean> {
     try {
-      const subscription = await this.getSubscription();
-      if (!subscription) return true;
-
       const response = await fetch('/api/push/unsubscribe', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ subscription })
+        body: JSON.stringify({ userId })
       });
 
       if (!response.ok) {
@@ -264,10 +261,10 @@ export const usePushNotifications = () => {
     }
   };
 
-  const disableNotifications = async () => {
+  const disableNotifications = async (userId: string) => {
     setLoading(true);
     try {
-      await pushNotificationManager.removeSubscriptionFromServer();
+      await pushNotificationManager.removeSubscriptionFromServer(userId);
       await pushNotificationManager.unsubscribe();
       setIsSubscribed(false);
     } catch (error) {
