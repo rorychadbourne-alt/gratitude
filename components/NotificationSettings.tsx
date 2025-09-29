@@ -21,24 +21,22 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     disableNotifications 
   } = usePushNotifications();
 
-  const [reminderTime, setReminderTime] = useState('19:00'); // Default 7 PM
-  const [reminderDays, setReminderDays] = useState({
-    monday: true,
-    tuesday: true,
-    wednesday: true,
-    thursday: true,
-    friday: true,
-    saturday: true,
-    sunday: true
-  });
   const [savedSettings, setSavedSettings] = useState(false);
   const [testingReminder, setTestingReminder] = useState(false);
 
   const handleEnableNotifications = async () => {
     const result = await enableNotifications({
       userId,
-      reminderTime,
-      reminderDays,
+      reminderTime: '19:00', // Default time for backend
+      reminderDays: {
+        monday: true,
+        tuesday: true,
+        wednesday: true,
+        thursday: true,
+        friday: true,
+        saturday: true,
+        sunday: true
+      },
       timezone: userTimezone || Intl.DateTimeFormat().resolvedOptions().timeZone
     });
 
@@ -80,52 +78,6 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
     }
   };
 
-  const handleDayToggle = (day: keyof typeof reminderDays) => {
-    setReminderDays(prev => ({
-      ...prev,
-      [day]: !prev[day]
-    }));
-  };
-
-  const handleTimeChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setReminderTime(e.target.value);
-  };
-
-  // Generate hourly time options with range display
-  const generateTimeOptions = () => {
-    const options = [];
-    for (let hour = 0; hour < 24; hour++) {
-      const timeValue = `${hour.toString().padStart(2, '0')}:00`;
-      const nextHour = (hour + 1) % 24;
-      
-      const startHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-      const endHour = nextHour === 0 ? 12 : nextHour > 12 ? nextHour - 12 : nextHour;
-      const startAmpm = hour >= 12 ? 'PM' : 'AM';
-      const endAmpm = nextHour >= 12 ? 'PM' : 'AM';
-      
-      const timeLabel = `${startHour}:00 ${startAmpm} - ${endHour}:00 ${endAmpm}`;
-      
-      options.push({
-        value: timeValue,
-        label: timeLabel
-      });
-    }
-    return options;
-  };
-
-  // Get the time range for display
-  const getTimeRangeDisplay = () => {
-    const hour = parseInt(reminderTime.split(':')[0]);
-    const nextHour = (hour + 1) % 24;
-    
-    const startHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
-    const endHour = nextHour === 0 ? 12 : nextHour > 12 ? nextHour - 12 : nextHour;
-    const startAmpm = hour >= 12 ? 'PM' : 'AM';
-    const endAmpm = nextHour >= 12 ? 'PM' : 'AM';
-    
-    return `${startHour}:00 ${startAmpm} - ${endHour}:00 ${endAmpm}`;
-  };
-
   if (!isSupported) {
     return (
       <div className="notification-settings unsupported">
@@ -143,7 +95,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
       
       <div className="notification-status">
         <div className={`status-badge ${isSubscribed ? 'enabled' : 'disabled'}`}>
-          {isSubscribed ? 'Notifications Enabled' : 'Notifications Disabled'}
+          {isSubscribed ? '✓ Enabled' : 'Disabled'}
         </div>
         {permission === 'denied' && (
           <p className="warning-text">
@@ -152,106 +104,79 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         )}
       </div>
 
-      <div className="settings-section">
-        <label htmlFor="reminder-time">
-          <strong>Reminder Time Window</strong>
-        </label>
-        <select
-          id="reminder-time"
-          value={reminderTime}
-          onChange={handleTimeChange}
-          className="time-select"
-        >
-          {generateTimeOptions().map(time => (
-            <option key={time.value} value={time.value}>
-              {time.label}
-            </option>
-          ))}
-        </select>
-        <p className="help-text">
-          You'll receive your reminder sometime during the selected hour
-        </p>
-        {isSubscribed && (
-          <div className="time-info">
-            Selected window: <strong>{getTimeRangeDisplay()}</strong>
+      <div className="toggle-section">
+        <div className="toggle-card">
+          <div className="toggle-content">
+            <div className="toggle-info">
+              <h4>Daily Gratitude Reminder</h4>
+              <p className="toggle-description">
+                Receive one notification per day to remind you to add your gratitude entry
+              </p>
+            </div>
+            <div className="toggle-switch-container">
+              {!isSubscribed ? (
+                <button
+                  onClick={handleEnableNotifications}
+                  disabled={loading || permission === 'denied'}
+                  className="btn btn-primary"
+                >
+                  {loading ? 'Enabling...' : 'Enable'}
+                </button>
+              ) : (
+                <button
+                  onClick={handleDisableNotifications}
+                  disabled={loading}
+                  className="btn btn-danger"
+                >
+                  {loading ? 'Disabling...' : 'Disable'}
+                </button>
+              )}
+            </div>
           </div>
-        )}
-      </div>
-
-      <div className="settings-section">
-        <label><strong>Reminder Days</strong></label>
-        <div className="days-selector">
-          {Object.entries(reminderDays).map(([day, enabled]) => (
-            <label key={day} className="day-checkbox">
-              <input
-                type="checkbox"
-                checked={enabled}
-                onChange={() => handleDayToggle(day as keyof typeof reminderDays)}
-              />
-              <span className="day-label">
-                {day.charAt(0).toUpperCase() + day.slice(1, 3)}
-              </span>
-            </label>
-          ))}
+          
+          {isSubscribed && (
+            <div className="test-section">
+              <button
+                onClick={handleTestReminder}
+                disabled={loading || testingReminder}
+                className="btn btn-test"
+              >
+                {testingReminder ? 'Sending...' : 'Send Test Notification'}
+              </button>
+            </div>
+          )}
         </div>
-      </div>
-
-      <div className="action-buttons">
-        {!isSubscribed ? (
-          <button
-            onClick={handleEnableNotifications}
-            disabled={loading || permission === 'denied'}
-            className="btn btn-primary"
-          >
-            {loading ? 'Setting up...' : 'Enable Daily Reminders'}
-          </button>
-        ) : (
-          <div className="enabled-actions">
-            <button
-              onClick={handleEnableNotifications}
-              disabled={loading}
-              className="btn btn-secondary"
-            >
-              {loading ? 'Saving...' : 'Save Changes'}
-            </button>
-            <button
-              onClick={handleDisableNotifications}
-              disabled={loading}
-              className="btn btn-outline"
-            >
-              {loading ? 'Disabling...' : 'Disable Reminders'}
-            </button>
-            <button
-              onClick={handleTestReminder}
-              disabled={loading || testingReminder}
-              className="btn btn-test"
-            >
-              {testingReminder ? 'Sending...' : 'Send Test Reminder'}
-            </button>
-          </div>
-        )}
       </div>
 
       {savedSettings && (
         <div className="success-message">
-          Settings saved successfully!
+          ✓ Settings saved successfully!
         </div>
       )}
 
       <div className="info-section">
-        <h4>How it works</h4>
-        <ul>
-          <li>Choose a one-hour time window for your daily reminder</li>
-          <li>You'll receive a notification sometime during that hour</li>
-          <li>Reminders only on the days you select</li>
-          <li>Tap the notification to quickly add your gratitude</li>
-          <li>Use the test button to preview your reminders anytime</li>
-        </ul>
+        <div className="info-banner">
+          <span className="info-icon">ℹ️</span>
+          <div>
+            <strong>Free Tier Notification</strong>
+            <p>Due to free tier limitations, reminders are sent once daily. You'll receive your notification at a consistent time each day.</p>
+          </div>
+        </div>
+        
+        <div className="how-it-works">
+          <h4>How it works</h4>
+          <ul>
+            <li>Get one reminder notification per day</li>
+            <li>Tap the notification to quickly add your gratitude</li>
+            <li>Use the test button to preview your reminder anytime</li>
+            <li>Disable anytime if you prefer not to receive reminders</li>
+          </ul>
+        </div>
       </div>
 
       <style jsx>{`
         .notification-settings {
-          max-width: 500px;
+          max-width: 550px;
           padding: 24px;
           background: white;
           border-radius: 12px;
@@ -267,12 +192,15 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           font-size: 1.25rem;
         }
 
+        .notification-status {
+          margin-bottom: 24px;
+        }
+
         .status-badge {
           display: inline-block;
           padding: 8px 16px;
           border-radius: 20px;
           font-weight: 600;
-          margin-bottom: 20px;
           font-size: 0.9rem;
         }
 
@@ -288,100 +216,60 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           border: 1px solid #f5c6cb;
         }
 
-        .settings-section {
+        .toggle-section {
           margin: 24px 0;
         }
 
-        .settings-section label {
-          display: block;
-          margin-bottom: 8px;
-          color: #2c3e50;
-          font-size: 1rem;
-        }
-
-        .time-select {
-          padding: 12px 16px;
+        .toggle-card {
           border: 2px solid #e1e5e9;
-          border-radius: 8px;
-          font-size: 16px;
-          width: 100%;
-          max-width: 280px;
-          background: white;
-          transition: border-color 0.2s;
-          cursor: pointer;
+          border-radius: 12px;
+          padding: 20px;
+          background: #f8f9fa;
         }
 
-        .time-select:focus {
-          outline: none;
-          border-color: #3498db;
-        }
-
-        .help-text {
-          color: #6c757d;
-          font-size: 14px;
-          margin-top: 6px;
-          font-style: italic;
-        }
-
-        .time-info {
-          margin-top: 10px;
-          padding: 10px 14px;
-          background: #e7f3ff;
-          border-left: 3px solid #2196f3;
-          border-radius: 4px;
-          font-size: 14px;
-          color: #1976d2;
-        }
-
-        .days-selector {
+        .toggle-content {
           display: flex;
-          flex-wrap: wrap;
-          gap: 12px;
-          margin-top: 12px;
+          justify-content: space-between;
+          align-items: flex-start;
+          gap: 20px;
         }
 
-        .day-checkbox {
-          display: flex;
-          align-items: center;
-          gap: 6px;
-          cursor: pointer;
-          padding: 6px 10px;
-          border-radius: 6px;
-          transition: background-color 0.2s;
+        .toggle-info {
+          flex: 1;
         }
 
-        .day-checkbox:hover {
-          background-color: #f8f9fa;
+        .toggle-info h4 {
+          margin: 0 0 8px 0;
+          color: #2c3e50;
+          font-size: 1.1rem;
         }
 
-        .day-checkbox input[type="checkbox"] {
+        .toggle-description {
           margin: 0;
-        }
-
-        .day-label {
-          font-weight: 500;
-          color: #495057;
+          color: #6c757d;
           font-size: 0.9rem;
+          line-height: 1.5;
         }
 
-        .action-buttons {
-          margin: 28px 0 20px 0;
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
+        .toggle-switch-container {
+          flex-shrink: 0;
+        }
+
+        .test-section {
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid #dee2e6;
         }
 
         .btn {
-          padding: 12px 20px;
+          padding: 10px 20px;
           border-radius: 8px;
           font-weight: 600;
           cursor: pointer;
           border: none;
           transition: all 0.2s;
-          font-size: 0.95rem;
+          font-size: 0.9rem;
           text-align: center;
-          text-decoration: none;
-          display: inline-block;
         }
 
         .btn:disabled {
@@ -392,6 +280,7 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
         .btn-primary {
           background: #007bff;
           color: white;
+          min-width: 100px;
         }
 
         .btn-primary:hover:not(:disabled) {
@@ -399,42 +288,26 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           transform: translateY(-1px);
         }
 
-        .btn-secondary {
-          background: #28a745;
-          color: white;
-        }
-
-        .btn-secondary:hover:not(:disabled) {
-          background: #1e7e34;
-          transform: translateY(-1px);
-        }
-
-        .btn-outline {
-          background: white;
-          color: #dc3545;
-          border: 2px solid #dc3545;
-        }
-
-        .btn-outline:hover:not(:disabled) {
+        .btn-danger {
           background: #dc3545;
           color: white;
+          min-width: 100px;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+          background: #c82333;
           transform: translateY(-1px);
         }
 
         .btn-test {
           background: #17a2b8;
           color: white;
+          width: 100%;
         }
 
         .btn-test:hover:not(:disabled) {
           background: #138496;
           transform: translateY(-1px);
-        }
-
-        .enabled-actions {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
         }
 
         .success-message {
@@ -453,31 +326,62 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
           background: #fff3cd;
           padding: 12px 16px;
           border-radius: 8px;
-          margin: 12px 0;
+          margin: 12px 0 0 0;
           border: 1px solid #ffeaa7;
           font-size: 0.9rem;
         }
 
         .info-section {
-          margin-top: 32px;
-          padding-top: 24px;
+          margin-top: 28px;
+        }
+
+        .info-banner {
+          display: flex;
+          gap: 12px;
+          padding: 16px;
+          background: #e7f3ff;
+          border-left: 4px solid #2196f3;
+          border-radius: 8px;
+          margin-bottom: 20px;
+        }
+
+        .info-icon {
+          font-size: 1.5rem;
+          flex-shrink: 0;
+        }
+
+        .info-banner strong {
+          display: block;
+          color: #1976d2;
+          margin-bottom: 4px;
+        }
+
+        .info-banner p {
+          margin: 0;
+          color: #1976d2;
+          font-size: 0.9rem;
+          line-height: 1.5;
+        }
+
+        .how-it-works {
+          padding-top: 20px;
           border-top: 1px solid #e9ecef;
         }
 
-        .info-section h4 {
+        .how-it-works h4 {
           color: #2c3e50;
-          margin-bottom: 12px;
+          margin: 0 0 12px 0;
           font-size: 1rem;
         }
 
-        .info-section ul {
+        .how-it-works ul {
           color: #6c757d;
           line-height: 1.6;
           padding-left: 20px;
           margin: 0;
         }
 
-        .info-section li {
+        .how-it-works li {
           margin-bottom: 6px;
         }
 
@@ -503,16 +407,18 @@ const NotificationSettings: React.FC<NotificationSettingsProps> = ({
             margin: 10px;
           }
           
-          .enabled-actions {
+          .toggle-content {
             flex-direction: column;
-          }
-          
-          .time-select {
-            width: 100%;
+            align-items: stretch;
           }
 
-          .days-selector {
+          .toggle-switch-container {
+            display: flex;
             justify-content: center;
+          }
+
+          .btn-primary, .btn-danger {
+            width: 100%;
           }
         }
       `}</style>
