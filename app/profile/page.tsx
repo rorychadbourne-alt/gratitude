@@ -67,7 +67,7 @@ export default function ProfilePage() {
       } else {
         const result = await enableNotifications({
           userId: user.id,
-          reminderTime: '19:00',
+          reminderTime: '07:00',
           reminderDays: {
             monday: true,
             tuesday: true,
@@ -132,7 +132,7 @@ export default function ProfilePage() {
               </p>
               {!isSupported && (
                 <p className="text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2 mt-3 border border-amber-200">
-                  Push notifications aren't supported in your browser
+                  Push notifications aren&apos;t supported in your browser
                 </p>
               )}
               {permission === 'denied' && (
