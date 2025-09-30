@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Remove subscription from storage
-    subscriptionStorage.delete(userId);
+    subscriptionStorage.delete(userId); 
 
     console.log('Push subscription removed for user:', userId);
 
