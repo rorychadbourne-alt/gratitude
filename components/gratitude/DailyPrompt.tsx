@@ -13,14 +13,23 @@ interface DailyPromptProps {
   onNewResponse?: () => void
 }
 
+const MOOD_OPTIONS = [
+  { score: 1, icon: '⛈️', label: 'Stormy', gradient: 'from-slate-400 to-slate-500' },
+  { score: 2, icon: '🌧️', label: 'Rainy', gradient: 'from-blue-400 to-blue-500' },
+  { score: 3, icon: '⛅', label: 'Cloudy', gradient: 'from-amber-300 to-amber-400' },
+  { score: 4, icon: '☀️', label: 'Sunny', gradient: 'from-yellow-400 to-orange-400' }
+]
+
 export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
   const [prompt, setPrompt] = useState<any>(null)
   const [response, setResponse] = useState('')
+  const [moodScore, setMoodScore] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const [userCircles, setUserCircles] = useState<any[]>([])
   const [existingResponse, setExistingResponse] = useState<any>(null)
+  const [existingMood, setExistingMood] = useState<any>(null)
   const [showShareModal, setShowShareModal] = useState(false)
   
   const toast = useToast()
@@ -31,7 +40,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     fetchUserCircles()
   }, [user?.id])
 
-  // Add milestone check function
   const checkForMilestone = async (userId: string) => {
     try {
       const { count } = await supabase
@@ -52,10 +60,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     if (!user?.id) return
     
     try {
+      const today = new Date().toISOString().split('T')[0]
+      
       const { data: promptData, error: promptError } = await supabase
         .from('gratitude_prompts')
         .select('*')
-        .eq('date', new Date().toISOString().split('T')[0])
+        .eq('date', today)
         .single()
 
       if (promptError) {
@@ -63,6 +73,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       } else {
         setPrompt(promptData)
 
+        // Fetch existing response
         const { data: responseData } = await supabase
           .from('gratitude_responses')
           .select('*')
@@ -74,6 +85,19 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         if (responseData) {
           setExistingResponse(responseData)
           setResponse(responseData.response_text)
+        }
+
+        // Fetch existing mood check-in for today
+        const { data: moodData } = await supabase
+          .from('wellbeing_checkins')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .single()
+
+        if (moodData) {
+          setExistingMood(moodData)
+          setMoodScore(moodData.mood_score)
         }
       }
     } catch (error) {
@@ -101,13 +125,12 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       const circles = data?.map(item => item.circles).filter(Boolean) || []
       
-      // Transform for modal format with mock data
       const transformedCircles = circles.map((circle: any, index: number) => ({
         id: circle.id,
         name: circle.name,
-        memberCount: Math.floor(Math.random() * 10) + 3, // Mock - replace with real query
-        streak: Math.floor(Math.random() * 20) + 1, // Mock - replace with real calculation
-        sharedToday: Math.floor(Math.random() * 5), // Mock - replace with real query
+        memberCount: Math.floor(Math.random() * 10) + 3,
+        streak: Math.floor(Math.random() * 20) + 1,
+        sharedToday: Math.floor(Math.random() * 5),
         color: ['orange', 'blue', 'purple', 'green', 'pink'][index % 5]
       }))
       
@@ -117,15 +140,48 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     }
   }
 
+  const saveMoodCheckin = async (responseId: string) => {
+    if (moodScore === null) return
+
+    try {
+      const today = new Date().toISOString().split('T')[0]
+      
+      if (existingMood) {
+        // Update existing mood
+        await supabase
+          .from('wellbeing_checkins')
+          .update({ 
+            mood_score: moodScore,
+            response_id: responseId
+          })
+          .eq('id', existingMood.id)
+      } else {
+        // Create new mood check-in
+        await supabase
+          .from('wellbeing_checkins')
+          .insert({
+            user_id: user.id,
+            response_id: responseId,
+            mood_score: moodScore,
+            date: today
+          })
+      }
+    } catch (error) {
+      console.error('Error saving mood check-in:', error)
+    }
+  }
+
   const handleSubmitClick = (e: React.FormEvent) => {
     e.preventDefault()
     if (!response.trim() || response.length > 1000) return
+    if (moodScore === null) {
+      setMessage('Please select your weather for today')
+      return
+    }
 
     if (!existingResponse) {
-      // Show modal for new responses
       setShowShareModal(true)
     } else {
-      // Direct submit for updates
       handleDirectSubmit()
     }
   }
@@ -137,7 +193,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     try {
       console.log('Creating response with circles:', selectedCircleIds)
       
-      // Create the gratitude response
       const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
@@ -152,10 +207,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       if (responseError) throw responseError
       console.log('Response created:', responseData.id)
 
-      // Update individual weekly streak
+      // Save mood check-in
+      await saveMoodCheckin(responseData.id)
+
       await updateWeeklyStreak(user.id)
 
-      // Handle circle sharing and community streak updates
       if (selectedCircleIds.length > 0) {
         console.log('Linking response to circles...')
         
@@ -185,16 +241,14 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       }
       
       setExistingResponse(responseData)
-      toasts.gratitudeShared() // Replace setMessage with toast
-      await checkForMilestone(user.id) // Check for milestone
+      toasts.gratitudeShared()
+      await checkForMilestone(user.id)
       setShowShareModal(false)
       
-      // Trigger refresh of both feeds
       if (onNewResponse) {
         onNewResponse()
       }
       
-      // Force refresh after a short delay to ensure data consistency
       setTimeout(() => {
         if (onNewResponse) {
           onNewResponse()
@@ -218,6 +272,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       return
     }
 
+    if (moodScore === null) {
+      setMessage('Please select your weather for today')
+      return
+    }
+
     setSubmitting(true)
     setMessage(null)
 
@@ -231,8 +290,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       if (error) throw error
       
+      // Update mood check-in
+      await saveMoodCheckin(existingResponse.id)
+      
       setExistingResponse(data)
-      toasts.gratitudeShared() // Replace setMessage with toast
+      toasts.gratitudeShared()
       
       if (onNewResponse) {
         onNewResponse()
@@ -288,10 +350,10 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           </p>
         </div>
 
-        {/* Error Message (keeping for validation errors) */}
+        {/* Error/Validation Message */}
         {message && (
           <div className={`p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 font-brand font-medium text-center text-sm sm:text-base ${
-            message.includes('Error') || message.includes('must be') 
+            message.includes('Error') || message.includes('must be') || message.includes('select')
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-green-50 text-green-700 border border-green-200'
           }`}>
@@ -301,6 +363,37 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
         {/* Form */}
         <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6">
+          {/* Mood Selector */}
+          <div>
+            <label className="font-brand text-sm font-medium text-sage-700 mb-3 block">
+              How&apos;s your weather today?
+            </label>
+            <div className="grid grid-cols-4 gap-2 sm:gap-3">
+              {MOOD_OPTIONS.map((mood) => (
+                <button
+                  key={mood.score}
+                  type="button"
+                  onClick={() => setMoodScore(mood.score)}
+                  className={`
+                    flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-200
+                    ${moodScore === mood.score 
+                      ? `border-${mood.gradient.split('-')[1]}-500 bg-gradient-to-br ${mood.gradient} shadow-md scale-105` 
+                      : 'border-white/50 bg-white/80 hover:border-periwinkle-300 hover:shadow-sm'
+                    }
+                  `}
+                >
+                  <span className="text-3xl sm:text-4xl mb-1 sm:mb-2">{mood.icon}</span>
+                  <span className={`font-brand text-xs sm:text-sm font-medium ${
+                    moodScore === mood.score ? 'text-white' : 'text-sage-700'
+                  }`}>
+                    {mood.label}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Gratitude Response */}
           <div>
             <div className="flex justify-between items-center mb-3">
               <label className="font-brand text-sm font-medium text-sage-700">
@@ -318,13 +411,13 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               rows={4}
               maxLength={1000}
               className="w-full px-3 sm:px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm text-base"
-              style={{ fontSize: '16px' }} // Prevents zoom on iOS
+              style={{ fontSize: '16px' }}
             />
           </div>
 
           <button
             type="submit"
-            disabled={submitting || !response.trim() || response.length > 1000}
+            disabled={submitting || !response.trim() || response.length > 1000 || moodScore === null}
             className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base min-h-[48px] active:scale-[0.98]"
           >
             {submitting ? (

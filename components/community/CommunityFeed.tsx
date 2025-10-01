@@ -31,6 +31,13 @@ interface UserCircle {
   circles: CircleData
 }
 
+const MOOD_CONFIG = {
+  1: { icon: '⛈️', label: 'Stormy', gradient: 'from-slate-300/40 to-slate-400/40', border: 'border-slate-400' },
+  2: { icon: '🌧️', label: 'Rainy', gradient: 'from-blue-300/40 to-blue-400/40', border: 'border-blue-400' },
+  3: { icon: '⛅', label: 'Cloudy', gradient: 'from-amber-200/40 to-amber-300/40', border: 'border-amber-400' },
+  4: { icon: '☀️', label: 'Sunny', gradient: 'from-yellow-300/40 to-orange-300/40', border: 'border-yellow-400' }
+}
+
 export default function CommunityFeed({ user }: CommunityFeedProps) {
   const [responses, setResponses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
@@ -53,7 +60,6 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
     try {
       console.log('Fetching user communities for user:', user.id)
       
-      // Get circles user belongs to with explicit typing
       const { data: userCircles, error: circlesError } = await supabase
         .from('circle_members')
         .select(`
@@ -75,26 +81,20 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         return
       }
 
-      // Get community data for each circle
       const communityData = await Promise.all(
         userCircles.map(async (uc: UserCircle) => {
           const circle = uc.circles
           
-          // Add type safety check
           if (!circle?.id || !circle?.name) {
             return null
           }
           
-          // Get total members count
           const { count: totalMembers } = await supabase
             .from('circle_members')
             .select('*', { count: 'exact', head: true })
             .eq('circle_id', circle.id)
 
-          // Get real community streak data
           const { data: streakData } = await getCurrentCommunityStreak(circle.id)
-          
-          // Get today's participation
           const { activeMembers } = await calculateCommunityParticipation(circle.id)
 
           return {
@@ -109,11 +109,9 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         })
       )
 
-      // Filter out null values
       const validCommunityData = communityData.filter(Boolean) as Community[]
       setCommunities(validCommunityData)
       
-      // Auto-select first community
       if (validCommunityData.length > 0 && !selectedCommunityId) {
         setSelectedCommunityId(validCommunityData[0].id)
       }
@@ -140,7 +138,6 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
     try {
       console.log('Fetching responses for community:', communityId)
       
-      // Get member IDs for this specific community
       const memberIds = await getCircleMemberIds(communityId)
 
       if (memberIds.length === 0) {
@@ -148,7 +145,6 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         return
       }
 
-      // Get response IDs that were shared with this circle
       const { data: sharedResponseIds, error: sharedError } = await supabase
         .from('response_circles')
         .select('response_id')
@@ -163,7 +159,7 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         return
       }
 
-      // Get the actual responses with user profiles for display names
+      // Fetch responses with profiles AND wellbeing check-ins
       const { data: communityResponses, error: responsesError } = await supabase
         .from('gratitude_responses')
         .select(`
@@ -174,6 +170,9 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
           ),
           profiles (
             display_name
+          ),
+          wellbeing_checkins (
+            mood_score
           )
         `)
         .in('id', responseIds)
@@ -189,13 +188,18 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
   }
 
   const getDisplayName = (response: any) => {
-    // Use display name if available, otherwise fall back to a generic name
     if (response.profiles?.display_name) {
       return response.profiles.display_name
     }
-    
-    // Fallback for users who haven't set display names yet
     return `Community Member`
+  }
+
+  const getMoodData = (response: any) => {
+    const moodScore = response.wellbeing_checkins?.[0]?.mood_score
+    if (moodScore && moodScore >= 1 && moodScore <= 4) {
+      return MOOD_CONFIG[moodScore as 1 | 2 | 3 | 4]
+    }
+    return null
   }
 
   const handleCommunitySelect = (communityId: string) => {
@@ -255,14 +259,12 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
         </h3>
       </div>
 
-      {/* Community Streak Selector */}
       <CommunityStreakSelector
         communities={communities}
         selectedCommunityId={selectedCommunityId}
         onCommunitySelect={handleCommunitySelect}
       />
 
-      {/* Selected Community Feed */}
       {selectedCommunity && (
         <div>
           {responses.length === 0 ? (
@@ -276,52 +278,158 @@ export default function CommunityFeed({ user }: CommunityFeedProps) {
             </div>
           ) : (
             <div className="space-y-6">
-              {responses.map((response) => (
-                <div
-                  key={response.id}
-                  className="border-l-4 border-periwinkle-400 pl-6 py-4 bg-gradient-to-r from-periwinkle-50 to-warm-50 rounded-r-xl hover:shadow-sm transition-shadow duration-200"
-                >
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-300 to-periwinkle-400 flex items-center justify-center">
-                        <span className="text-xs font-brand font-bold text-white">
-                          {getDisplayName(response).charAt(0).toUpperCase()}
-                        </span>
+              {responses.map((response) => {
+                const mood = getMoodData(response)
+                
+                return (
+                  <div
+                    key={response.id}
+                    className={`
+                      relative overflow-hidden border-l-4 ${mood ? mood.border : 'border-periwinkle-400'} 
+                      pl-6 py-4 rounded-r-xl hover:shadow-md transition-all duration-200
+                      bg-gradient-to-r ${mood ? mood.gradient : 'from-periwinkle-50 to-warm-50'}
+                    `}
+                  >
+                    {/* Animated Weather Background */}
+                    {mood && (
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                        {mood.label === 'Sunny' && (
+                          <>
+                            {[...Array(6)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="absolute w-16 h-0.5 bg-yellow-300/30 animate-sunshine"
+                                style={{
+                                  top: '20%',
+                                  right: '10%',
+                                  transform: `rotate(${i * 60}deg)`,
+                                  transformOrigin: 'left center',
+                                  animationDelay: `${i * 0.2}s`
+                                }}
+                              />
+                            ))}
+                          </>
+                        )}
+                        {mood.label === 'Rainy' && (
+                          <>
+                            {[...Array(8)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="absolute w-0.5 h-4 bg-blue-400/30 animate-rain"
+                                style={{
+                                  left: `${10 + i * 12}%`,
+                                  animationDelay: `${i * 0.15}s`
+                                }}
+                              />
+                            ))}
+                          </>
+                        )}
+                        {mood.label === 'Stormy' && (
+                          <>
+                            {[...Array(6)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="absolute w-0.5 h-6 bg-slate-400/40 animate-storm"
+                                style={{
+                                  left: `${15 + i * 15}%`,
+                                  animationDelay: `${i * 0.2}s`
+                                }}
+                              />
+                            ))}
+                          </>
+                        )}
+                        {mood.label === 'Cloudy' && (
+                          <div className="absolute top-0 right-0 w-32 h-32 bg-amber-200/20 rounded-full blur-3xl animate-pulse" />
+                        )}
                       </div>
-                      <div>
-                        <span className="font-brand font-medium text-sage-800">
-                          {getDisplayName(response)}
-                          {response.user_id === user.id && (
-                            <span className="ml-2 text-xs bg-gold-100 text-gold-800 px-2 py-1 rounded-full">
-                              You
+                    )}
+
+                    {/* Content */}
+                    <div className="relative z-10">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-periwinkle-300 to-periwinkle-400 flex items-center justify-center">
+                            <span className="text-xs font-brand font-bold text-white">
+                              {getDisplayName(response).charAt(0).toUpperCase()}
                             </span>
-                          )}
-                        </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-brand font-medium text-sage-800">
+                              {getDisplayName(response)}
+                              {response.user_id === user.id && (
+                                <span className="ml-2 text-xs bg-gold-100 text-gold-800 px-2 py-1 rounded-full">
+                                  You
+                                </span>
+                              )}
+                            </span>
+                            {mood && (
+                              <div className="flex items-center gap-1 bg-white/60 backdrop-blur-sm px-2 py-1 rounded-full">
+                                <span className="text-lg">{mood.icon}</span>
+                                <span className="text-xs font-brand font-medium text-sage-600">
+                                  {mood.label}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-brand text-xs text-sage-500">
+                            {new Date(response.created_at).toLocaleDateString('en-US', {
+                              month: 'short',
+                              day: 'numeric'
+                            })}
+                          </p>
+                        </div>
                       </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-brand text-xs text-sage-500">
-                        {new Date(response.created_at).toLocaleDateString('en-US', {
-                          month: 'short',
-                          day: 'numeric'
-                        })}
+                      
+                      <h4 className="font-display text-lg font-medium text-sage-800 mb-3 leading-relaxed">
+                        {response.gratitude_prompts?.prompt || 'Personal reflection'}
+                      </h4>
+                      
+                      <p className="font-brand text-sage-700 leading-relaxed bg-white/60 backdrop-blur-sm p-4 rounded-lg">
+                        {response.response_text}
                       </p>
                     </div>
                   </div>
-                  
-                  <h4 className="font-display text-lg font-medium text-sage-800 mb-3 leading-relaxed">
-                    {response.gratitude_prompts?.prompt || 'Personal reflection'}
-                  </h4>
-                  
-                  <p className="font-brand text-sage-700 leading-relaxed bg-white/60 p-4 rounded-lg">
-                    {response.response_text}
-                  </p>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
         </div>
       )}
+
+      <style jsx>{`
+        @keyframes sunshine {
+          0%, 100% { opacity: 0.2; transform: rotate(var(--rotation)) scale(1); }
+          50% { opacity: 0.4; transform: rotate(var(--rotation)) scale(1.1); }
+        }
+
+        @keyframes rain {
+          0% { transform: translateY(-100%); opacity: 0; }
+          10% { opacity: 0.6; }
+          90% { opacity: 0.6; }
+          100% { transform: translateY(400%); opacity: 0; }
+        }
+
+        @keyframes storm {
+          0% { transform: translateY(-100%) translateX(0); opacity: 0; }
+          10% { opacity: 0.8; }
+          90% { opacity: 0.8; }
+          100% { transform: translateY(400%) translateX(-20px); opacity: 0; }
+        }
+
+        .animate-sunshine {
+          animation: sunshine 3s ease-in-out infinite;
+        }
+
+        .animate-rain {
+          animation: rain 1.5s linear infinite;
+        }
+
+        .animate-storm {
+          animation: storm 1.2s linear infinite;
+        }
+      `}</style>
     </div>
   )
 }
