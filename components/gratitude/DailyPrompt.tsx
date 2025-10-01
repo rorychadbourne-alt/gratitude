@@ -362,6 +362,9 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
             {/* Mood Bar */}
             <div className="border-t border-gray-100 pt-4">
+              <label className="font-brand text-sm font-semibold text-sage-700 mb-3 block">
+                How are you feeling today?
+              </label>
               <div className="flex gap-2 sm:gap-3">
                 {MOOD_OPTIONS.map((mood) => (
                   <button
@@ -369,16 +372,34 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
                     type="button"
                     onClick={() => setMoodScore(mood.score)}
                     className={`
-                      flex-1 flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl transition-all duration-200
+                      flex-1 flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl transition-all duration-200 relative overflow-hidden
                       ${moodScore === mood.score 
-                        ? 'bg-gold-100 scale-105 shadow-sm' 
-                        : 'bg-gray-50 hover:bg-gray-100'
+                        ? `bg-gradient-to-br ${mood.gradient.replace('from-', 'from-').replace('to-', 'to-')} scale-105 shadow-md border-2 border-white` 
+                        : 'bg-gray-50 hover:shadow-sm border-2 border-transparent'
                       }
                     `}
+                    style={{
+                      backgroundColor: moodScore === mood.score ? '' : moodScore !== null && moodScore !== mood.score ? '#f9fafb' : ''
+                    }}
+                    onMouseEnter={(e) => {
+                      if (moodScore !== mood.score) {
+                        e.currentTarget.style.background = `linear-gradient(135deg, ${
+                          mood.score === 1 ? 'rgb(148 163 184 / 0.3)' :
+                          mood.score === 2 ? 'rgb(96 165 250 / 0.3)' :
+                          mood.score === 3 ? 'rgb(251 191 36 / 0.3)' :
+                          'rgb(251 191 36 / 0.4)'
+                        })`
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (moodScore !== mood.score) {
+                        e.currentTarget.style.background = '#f9fafb'
+                      }
+                    }}
                   >
-                    <span className="text-2xl sm:text-3xl mb-1">{mood.icon}</span>
-                    <span className={`font-brand text-xs font-medium ${
-                      moodScore === mood.score ? 'text-sage-800' : 'text-sage-500'
+                    <span className="text-2xl sm:text-3xl mb-1 relative z-10">{mood.icon}</span>
+                    <span className={`font-brand text-xs font-medium relative z-10 ${
+                      moodScore === mood.score ? 'text-white' : 'text-sage-500'
                     }`}>
                       {mood.label}
                     </span>
@@ -392,7 +413,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           <button
             type="submit"
             disabled={submitting || !response.trim() || response.length > 1000 || moodScore === null}
-            className="w-full bg-gradient-to-r from-sage-700 to-sage-800 text-white py-4 px-6 rounded-2xl hover:from-sage-800 hover:to-sage-900 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-bold transition-all duration-200 shadow-lg hover:shadow-xl text-base uppercase tracking-wide min-h-[56px] active:scale-[0.98]"
+            className="w-full bg-gradient-to-r from-orange-500 to-orange-600 text-white py-4 px-6 rounded-2xl hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-bold transition-all duration-200 shadow-lg hover:shadow-xl text-base uppercase tracking-wide min-h-[56px] active:scale-[0.98]"
           >
             {submitting ? (
               <span className="flex items-center justify-center space-x-2">
