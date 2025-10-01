@@ -349,63 +349,37 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
               required
               rows={3}
               maxLength={1000}
-              className="w-full border-none focus:ring-0 resize-none font-brand text-sage-800 placeholder-sage-400 text-base sm:text-lg mb-4 outline-none"
+              className="w-full border-none focus:ring-0 resize-none font-brand text-sage-800 placeholder-sage-400 text-base sm:text-lg mb-3 outline-none"
               style={{ fontSize: '16px' }}
             />
 
-            {/* Character Count */}
-            <div className="flex justify-end mb-3">
-              <span className={`font-brand text-xs ${response.length > 900 ? 'text-orange-600' : 'text-sage-400'}`}>
-                {response.length}/1000
-              </span>
-            </div>
-
-            {/* Mood Bar */}
-            <div className="border-t border-gray-100 pt-4">
-              <label className="font-brand text-sm font-semibold text-sage-700 mb-3 block">
-                How are you feeling today?
-              </label>
-              <div className="flex gap-2 sm:gap-3">
+            {/* Subtle Mood Pills - Inline */}
+            <div className="flex items-center justify-between border-t border-gray-100 pt-3">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="font-brand text-xs text-sage-500 mr-1">Feeling:</span>
                 {MOOD_OPTIONS.map((mood) => (
                   <button
                     key={mood.score}
                     type="button"
                     onClick={() => setMoodScore(mood.score)}
                     className={`
-                      flex-1 flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl transition-all duration-200 relative overflow-hidden
+                      inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 text-xs font-brand font-medium
                       ${moodScore === mood.score 
-                        ? `bg-gradient-to-br ${mood.gradient.replace('from-', 'from-').replace('to-', 'to-')} scale-105 shadow-md border-2 border-white` 
-                        : 'bg-gray-50 hover:shadow-sm border-2 border-transparent'
+                        ? 'bg-gradient-to-r from-orange-100 to-orange-200 text-orange-800 border border-orange-300 shadow-sm' 
+                        : 'bg-gray-100 text-sage-600 hover:bg-gray-200 border border-transparent'
                       }
                     `}
-                    style={{
-                      backgroundColor: moodScore === mood.score ? '' : moodScore !== null && moodScore !== mood.score ? '#f9fafb' : ''
-                    }}
-                    onMouseEnter={(e) => {
-                      if (moodScore !== mood.score) {
-                        e.currentTarget.style.background = `linear-gradient(135deg, ${
-                          mood.score === 1 ? 'rgb(148 163 184 / 0.3)' :
-                          mood.score === 2 ? 'rgb(96 165 250 / 0.3)' :
-                          mood.score === 3 ? 'rgb(251 191 36 / 0.3)' :
-                          'rgb(251 191 36 / 0.4)'
-                        })`
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (moodScore !== mood.score) {
-                        e.currentTarget.style.background = '#f9fafb'
-                      }
-                    }}
                   >
-                    <span className="text-2xl sm:text-3xl mb-1 relative z-10">{mood.icon}</span>
-                    <span className={`font-brand text-xs font-medium relative z-10 ${
-                      moodScore === mood.score ? 'text-white' : 'text-sage-500'
-                    }`}>
-                      {mood.label}
-                    </span>
+                    <span className="text-base">{mood.icon}</span>
+                    <span>{mood.label}</span>
                   </button>
                 ))}
               </div>
+              
+              {/* Character Count */}
+              <span className={`font-brand text-xs whitespace-nowrap ml-2 ${response.length > 900 ? 'text-orange-600' : 'text-sage-400'}`}>
+                {response.length}/1000
+              </span>
             </div>
           </div>
 
