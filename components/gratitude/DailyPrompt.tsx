@@ -73,7 +73,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       } else {
         setPrompt(promptData)
 
-        // Fetch existing response
         const { data: responseData } = await supabase
           .from('gratitude_responses')
           .select('*')
@@ -87,7 +86,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           setResponse(responseData.response_text)
         }
 
-        // Fetch existing mood check-in for today
         const { data: moodData } = await supabase
           .from('wellbeing_checkins')
           .select('*')
@@ -147,7 +145,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
       const today = new Date().toISOString().split('T')[0]
       
       if (existingMood) {
-        // Update existing mood
         await supabase
           .from('wellbeing_checkins')
           .update({ 
@@ -156,7 +153,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           })
           .eq('id', existingMood.id)
       } else {
-        // Create new mood check-in
         await supabase
           .from('wellbeing_checkins')
           .insert({
@@ -191,8 +187,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
     setMessage(null)
 
     try {
-      console.log('Creating response with circles:', selectedCircleIds)
-      
       const { data: responseData, error: responseError } = await supabase
         .from('gratitude_responses')
         .insert({
@@ -205,16 +199,11 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         .single()
 
       if (responseError) throw responseError
-      console.log('Response created:', responseData.id)
 
-      // Save mood check-in
       await saveMoodCheckin(responseData.id)
-
       await updateWeeklyStreak(user.id)
 
       if (selectedCircleIds.length > 0) {
-        console.log('Linking response to circles...')
-        
         const circleInserts = selectedCircleIds.map(circleId => ({
           response_id: responseData.id,
           circle_id: circleId
@@ -224,19 +213,14 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           .from('response_circles')
           .insert(circleInserts)
 
-        if (circlesError) {
-          console.error('Error linking response to circles:', circlesError)
-          throw circlesError
-        } else {
-          console.log('Response linked to circles successfully')
+        if (circlesError) throw circlesError
           
-          try {
-            await Promise.all(
-              selectedCircleIds.map(circleId => updateCommunityStreak(circleId))
-            )
-          } catch (streakError) {
-            console.error('Error updating community streaks:', streakError)
-          }
+        try {
+          await Promise.all(
+            selectedCircleIds.map(circleId => updateCommunityStreak(circleId))
+          )
+        } catch (streakError) {
+          console.error('Error updating community streaks:', streakError)
         }
       }
       
@@ -290,7 +274,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
       if (error) throw error
       
-      // Update mood check-in
       await saveMoodCheckin(existingResponse.id)
       
       setExistingResponse(data)
@@ -331,28 +314,22 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-periwinkle-50 via-warm-50 to-gold-100 rounded-xl shadow-lg border border-periwinkle-200 p-4 sm:p-8">
-        {/* Prompt Display */}
-        <div className="mb-6 sm:mb-8 p-4 sm:p-6 bg-white/80 backdrop-blur-sm rounded-xl border border-white/50 shadow-sm">
-          <div className="mb-4">
-            <h3 className="font-brand text-sm font-medium text-sage-600 mb-1">Today&apos;s Gratitude</h3>
-            <p className="font-brand text-xs text-sage-500">
-              {new Date().toLocaleDateString('en-US', { 
-                weekday: 'long', 
-                month: 'long', 
-                day: 'numeric' 
-              })}
-            </p>
-          </div>
-          
-          <p className="font-display text-lg sm:text-xl text-sage-800 font-medium leading-relaxed">
+      <div className="bg-gradient-to-b from-warm-100 via-periwinkle-50 to-white rounded-2xl shadow-lg border border-periwinkle-200 p-5 sm:p-8 relative">
+        {/* Floating Date Badge */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 bg-gold-100 text-gold-800 px-3 py-1.5 rounded-full font-brand text-xs font-semibold">
+          {new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+        </div>
+
+        {/* Prominent Prompt */}
+        <div className="pr-20 mb-6">
+          <h3 className="font-display text-2xl sm:text-3xl font-bold text-sage-900 leading-tight">
             {prompt.prompt}
-          </p>
+          </h3>
         </div>
 
         {/* Error/Validation Message */}
         {message && (
-          <div className={`p-3 sm:p-4 rounded-xl mb-4 sm:mb-6 font-brand font-medium text-center text-sm sm:text-base ${
+          <div className={`p-3 sm:p-4 rounded-xl mb-4 font-brand font-medium text-center text-sm ${
             message.includes('Error') || message.includes('must be') || message.includes('select')
               ? 'bg-red-50 text-red-700 border border-red-200'
               : 'bg-green-50 text-green-700 border border-green-200'
@@ -361,66 +338,61 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           </div>
         )}
 
-         {/* Gratitude Response */}
-         <div>
-            <div className="flex justify-between items-center mb-3">
-              <label className="font-brand text-sm font-medium text-sage-700">
-                Share your thoughts
-              </label>
-              <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
-                {response.length}/1000
-              </span>
-            </div>
+        {/* Unified Input Card */}
+        <form onSubmit={handleSubmitClick} className="space-y-4">
+          <div className="bg-white rounded-2xl shadow-md p-4 sm:p-5 border border-gray-100">
+            {/* Textarea */}
             <textarea
               value={response}
               onChange={(e) => setResponse(e.target.value)}
-              placeholder="Share your response..."
+              placeholder="Share your thoughts..."
               required
-              rows={4}
+              rows={3}
               maxLength={1000}
-              className="w-full px-3 sm:px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm text-base"
+              className="w-full border-none focus:ring-0 resize-none font-brand text-sage-800 placeholder-sage-400 text-base sm:text-lg mb-4 outline-none"
               style={{ fontSize: '16px' }}
             />
-          </div>
 
-        {/* Form */}
-        <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6">
-          {/* Mood Selector */}
-          <div>
-            <label className="font-brand text-sm font-medium text-sage-700 mb-3 block">
-              How&apos;s your weather today?
-            </label>
-            <div className="grid grid-cols-4 gap-2 sm:gap-3">
-              {MOOD_OPTIONS.map((mood) => (
-                <button
-                  key={mood.score}
-                  type="button"
-                  onClick={() => setMoodScore(mood.score)}
-                  className={`
-                    flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border-2 transition-all duration-200
-                    ${moodScore === mood.score 
-                      ? `border-${mood.gradient.split('-')[1]}-500 bg-gradient-to-br ${mood.gradient} shadow-md scale-105` 
-                      : 'border-white/50 bg-white/80 hover:border-periwinkle-300 hover:shadow-sm'
-                    }
-                  `}
-                >
-                  <span className="text-3xl sm:text-4xl mb-1 sm:mb-2">{mood.icon}</span>
-                  <span className={`font-brand text-xs sm:text-sm font-medium ${
-                    moodScore === mood.score ? 'text-white' : 'text-sage-700'
-                  }`}>
-                    {mood.label}
-                  </span>
-                </button>
-              ))}
+            {/* Character Count */}
+            <div className="flex justify-end mb-3">
+              <span className={`font-brand text-xs ${response.length > 900 ? 'text-orange-600' : 'text-sage-400'}`}>
+                {response.length}/1000
+              </span>
+            </div>
+
+            {/* Mood Bar */}
+            <div className="border-t border-gray-100 pt-4">
+              <div className="flex gap-2 sm:gap-3">
+                {MOOD_OPTIONS.map((mood) => (
+                  <button
+                    key={mood.score}
+                    type="button"
+                    onClick={() => setMoodScore(mood.score)}
+                    className={`
+                      flex-1 flex flex-col items-center justify-center p-2 sm:p-3 rounded-xl transition-all duration-200
+                      ${moodScore === mood.score 
+                        ? 'bg-gold-100 scale-105 shadow-sm' 
+                        : 'bg-gray-50 hover:bg-gray-100'
+                      }
+                    `}
+                  >
+                    <span className="text-2xl sm:text-3xl mb-1">{mood.icon}</span>
+                    <span className={`font-brand text-xs font-medium ${
+                      moodScore === mood.score ? 'text-sage-800' : 'text-sage-500'
+                    }`}>
+                      {mood.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-         
-
+          {/* Submit Button */}
           <button
             type="submit"
             disabled={submitting || !response.trim() || response.length > 1000 || moodScore === null}
-            className="w-full bg-gradient-to-r from-periwinkle-500 to-periwinkle-600 text-white py-4 px-6 rounded-xl hover:from-periwinkle-600 hover:to-periwinkle-700 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-medium transition-all duration-200 shadow-md hover:shadow-lg text-base min-h-[48px] active:scale-[0.98]"
+            className="w-full bg-gradient-to-r from-sage-700 to-sage-800 text-white py-4 px-6 rounded-2xl hover:from-sage-800 hover:to-sage-900 disabled:opacity-50 disabled:cursor-not-allowed font-brand font-bold transition-all duration-200 shadow-lg hover:shadow-xl text-base uppercase tracking-wide min-h-[56px] active:scale-[0.98]"
           >
             {submitting ? (
               <span className="flex items-center justify-center space-x-2">
@@ -436,7 +408,6 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
         </form>
       </div>
 
-      {/* Share Modal */}
       <ShareModal 
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
