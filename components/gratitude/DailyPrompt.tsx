@@ -361,6 +361,28 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
           </div>
         )}
 
+         {/* Gratitude Response */}
+         <div>
+            <div className="flex justify-between items-center mb-3">
+              <label className="font-brand text-sm font-medium text-sage-700">
+                Share your thoughts
+              </label>
+              <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
+                {response.length}/1000
+              </span>
+            </div>
+            <textarea
+              value={response}
+              onChange={(e) => setResponse(e.target.value)}
+              placeholder="Share your response..."
+              required
+              rows={4}
+              maxLength={1000}
+              className="w-full px-3 sm:px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm text-base"
+              style={{ fontSize: '16px' }}
+            />
+          </div>
+
         {/* Form */}
         <form onSubmit={handleSubmitClick} className="space-y-4 sm:space-y-6">
           {/* Mood Selector */}
@@ -393,27 +415,7 @@ export default function DailyPrompt({ user, onNewResponse }: DailyPromptProps) {
             </div>
           </div>
 
-          {/* Gratitude Response */}
-          <div>
-            <div className="flex justify-between items-center mb-3">
-              <label className="font-brand text-sm font-medium text-sage-700">
-                Share your thoughts
-              </label>
-              <span className={`font-brand text-sm ${response.length > 900 ? 'text-orange-600' : 'text-sage-500'}`}>
-                {response.length}/1000
-              </span>
-            </div>
-            <textarea
-              value={response}
-              onChange={(e) => setResponse(e.target.value)}
-              placeholder="Share your response..."
-              required
-              rows={4}
-              maxLength={1000}
-              className="w-full px-3 sm:px-4 py-3 border border-white/50 bg-white/80 backdrop-blur-sm rounded-xl focus:ring-2 focus:ring-periwinkle-500 focus:border-transparent resize-none font-brand text-sage-800 placeholder-sage-400 transition-all duration-200 shadow-sm text-base"
-              style={{ fontSize: '16px' }}
-            />
-          </div>
+         
 
           <button
             type="submit"
