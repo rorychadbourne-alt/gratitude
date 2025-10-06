@@ -190,7 +190,7 @@ export default function MoodInsights({ userId }: MoodInsightsProps) {
 
       {/* Mood Breakdown */}
       <div className="pt-6 border-t border-gray-100">
-        <p className="font-brand text-sm font-semibold text-sage-700 mb-4">How You've Been Feeling</p>
+        <p className="font-brand text-sm font-semibold text-sage-700 mb-4">How You&apos;ve Been Feeling</p>
         <div className="space-y-3">
           {Object.entries(distribution).reverse().map(([score, count]) => {
             const mood = MOOD_CONFIG[parseInt(score) as 1 | 2 | 3 | 4]
