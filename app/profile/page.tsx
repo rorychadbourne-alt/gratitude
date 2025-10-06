@@ -5,9 +5,9 @@ import { supabase } from '../../lib/supabase'
 import { useRouter } from 'next/navigation'
 import UserProfile from '../../components/profile/UserProfile'
 import Navigation from '../../components/ui/Navigation'
-import WellbeingGraph from '../../components/profile/WellbeingGraph'
 import MoodLineChart from '../../components/profile/MoodLineChart'
 import MoodInsights from '../../components/profile/MoodInsights'
+import MoodCalendar from '../../components/profile/MoodCalendar'
 
 export default function ProfilePage() {
   const [user, setUser] = useState<any>(null)
@@ -73,8 +73,8 @@ export default function ProfilePage() {
           <MoodInsights userId={user.id} />
         </div>
         
-        {/* Original Bar Chart */}
-        <WellbeingGraph userId={user.id} />
+        {/* Calendar View */}
+        <MoodCalendar userId={user.id} />
       </div>
     </div>
   )
