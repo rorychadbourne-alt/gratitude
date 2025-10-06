@@ -54,17 +54,23 @@ export default function MoodLineChart({ userId }: MoodLineChartProps) {
   }
 
   const calculateAverage = () => {
-    if (checkins.length === 0) return 0
+    if (checkins.length === 0) return '0.0'
     const sum = checkins.reduce((acc, c) => acc + c.mood_score, 0)
     return (sum / checkins.length).toFixed(1)
   }
 
+  const getAverageMoodIcon = () => {
+    const avg = parseFloat(calculateAverage())
+    const roundedScore = Math.round(avg) as 1 | 2 | 3 | 4
+    return MOOD_CONFIG[roundedScore]?.icon || MOOD_CONFIG[3].icon
+  }
+
   const getLineColor = () => {
     const avg = parseFloat(calculateAverage())
-    if (avg >= 3.5) return '#fb923c' // Sunny
-    if (avg >= 2.5) return '#fbbf24' // Cloudy
-    if (avg >= 1.5) return '#60a5fa' // Rainy
-    return '#64748b' // Stormy
+    if (avg >= 3.5) return '#fb923c'
+    if (avg >= 2.5) return '#fbbf24'
+    if (avg >= 1.5) return '#60a5fa'
+    return '#64748b'
   }
 
   const formatDate = (dateString: string) => {
@@ -172,7 +178,7 @@ export default function MoodLineChart({ userId }: MoodLineChartProps) {
               <p className="font-brand text-xs text-sage-600 mb-1">Average</p>
               <div className="flex items-center gap-2">
                 <span className="text-2xl">
-                  {MOOD_CONFIG[Math.round(parseFloat(calculateAverage())) as 1 | 2 | 3 | 4].icon}
+                  {getAverageMoodIcon()}
                 </span>
                 <span className="font-display text-2xl font-semibold text-sage-800">
                   {calculateAverage()}
@@ -199,9 +205,9 @@ export default function MoodLineChart({ userId }: MoodLineChartProps) {
                 <line
                   key={level}
                   x1="10"
-                  y1={100 - 10 - ((level - 1) * (100 - 20) / 3)}
+                  y1={(100 - 10 - ((level - 1) * (100 - 20) / 3)).toString()}
                   x2="90"
-                  y2={100 - 10 - ((level - 1) * (100 - 20) / 3)}
+                  y2={(100 - 10 - ((level - 1) * (100 - 20) / 3)).toString()}
                   stroke="#e5e7eb"
                   strokeWidth="0.5"
                   strokeDasharray="2,2"
@@ -236,8 +242,8 @@ export default function MoodLineChart({ userId }: MoodLineChartProps) {
                 return (
                   <g key={checkin.id}>
                     <circle
-                      cx={x}
-                      cy={y}
+                      cx={x.toString()}
+                      cy={y.toString()}
                       r={hoveredPoint === index ? "3" : "2"}
                       fill="white"
                       stroke={getLineColor()}
@@ -249,8 +255,8 @@ export default function MoodLineChart({ userId }: MoodLineChartProps) {
                     {hoveredPoint === index && (
                       <>
                         <rect
-                          x={x - 15}
-                          y={y - 25}
+                          x={(x - 15).toString()}
+                          y={(y - 25).toString()}
                           width="30"
                           height="20"
                           rx="4"
@@ -258,8 +264,8 @@ export default function MoodLineChart({ userId }: MoodLineChartProps) {
                           opacity="0.9"
                         />
                         <text
-                          x={x}
-                          y={y - 12}
+                          x={x.toString()}
+                          y={(y - 12).toString()}
                           textAnchor="middle"
                           fill="white"
                           fontSize="8"
