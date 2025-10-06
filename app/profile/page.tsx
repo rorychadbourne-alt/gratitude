@@ -67,7 +67,13 @@ export default function ProfilePage() {
       <div className="px-4 py-6 sm:py-8 max-w-4xl mx-auto space-y-6">
         <UserProfile user={user} profile={profile} />
         
-        {/* Wellbeing Graph */}
+        {/* Mood Tracking Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <MoodLineChart userId={user.id} />
+          <MoodInsights userId={user.id} />
+        </div>
+        
+        {/* Original Bar Chart */}
         <WellbeingGraph userId={user.id} />
       </div>
     </div>
